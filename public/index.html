@@ -1,342 +1,92 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>香港法律 AI 助手</title>
+    <title>Seedance 2.0 Video Generator</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div class="bg-orb orb-1" aria-hidden="true"></div>
-    <div class="bg-orb orb-2" aria-hidden="true"></div>
-    <div class="bg-orb orb-3" aria-hidden="true"></div>
+    <main class="container">
+      <header>
+        <h1>Seedance 2.0 Video Generator</h1>
+        <p>Generate a video from text, then download it.</p>
+      </header>
 
-    <header class="top-nav">
-      <div class="nav-inner">
-        <a href="#" class="brand">
-          <span class="brand-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 3L4 7v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V7l-8-4Z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M9.2 12.5l1.9 2 3.8-4.2"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <span class="brand-text">
-            <strong>LexBridge HK</strong>
-            <small>香港法律 AI 助手</small>
-          </span>
-        </a>
-        <nav class="nav-links" aria-label="主選單">
-          <a href="/lawyers.html">律師名冊</a>
-          <a href="#services">服務範圍</a>
-          <a href="#assistant">AI 問答</a>
-          <a href="#about">品牌介紹</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="page">
-      <section class="hero">
-        <div class="hero-content">
-          <p class="eyebrow">Hong Kong Legal Intelligence</p>
-          <h1>香港法律 AI 專業顧問平台</h1>
-          <p class="hero-text">
-            以繁體中文提供香港法律資訊分析，協助客戶快速掌握僱傭、租務、商業合規、民事及刑事法律重點。
-          </p>
-          <div class="hero-tags">
-            <span>僱傭法</span>
-            <span>租務爭議</span>
-            <span>公司合規</span>
-            <span>家庭法</span>
-          </div>
-        </div>
-        <div class="hero-media">
-          <img
-            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80"
-            alt="香港商業區及高樓景觀"
-          />
-        </div>
-      </section>
-
-      <section class="trust-strip" aria-label="平台優勢">
-        <article class="trust-item">
-          <span class="trust-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 3L4 7v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V7l-8-4Z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <div>
-            <h2>安全架構</h2>
-            <p>企業級部署流程，支援雲端營運與可擴充 API。</p>
-          </div>
-        </article>
-        <article class="trust-item">
-          <span class="trust-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M3 6h18M3 12h18M3 18h10"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
-          </span>
-          <div>
-            <h2>條理分析</h2>
-            <p>結論、法律依據、步驟與風險提示一次整理。</p>
-          </div>
-        </article>
-        <article class="trust-item">
-          <span class="trust-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M4 19h16M7 16V8m5 8V5m5 11v-6"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <div>
-            <h2>即時回覆</h2>
-            <p>快速回答常見法律問題，提升客戶服務效率。</p>
-          </div>
-        </article>
-      </section>
-
-      <section id="services" class="feature-grid">
-        <article class="feature-card">
-          <img
-            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80"
-            alt="法律文件與合約審閱"
-          />
-          <div>
-            <span class="feature-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M7 3h8l4 4v14H7V3Zm8 0v5h5"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h2>合約與商業法律</h2>
-            <p>針對企業合作、服務條款與風險條款提供清晰分析方向。</p>
-          </div>
-        </article>
-        <article class="feature-card">
-          <img
-            src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=900&q=80"
-            alt="法庭與法律程序"
-          />
-          <div>
-            <span class="feature-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M4 20h16M6.5 8 12 4l5.5 4M8 8l-2 6m10-6 2 6M9.5 8v6m5 0V8"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h2>爭議與訴訟程序</h2>
-            <p>整理香港常見訴訟流程與證據準備建議，協助你規劃下一步。</p>
-          </div>
-        </article>
-        <article class="feature-card">
-          <img
-            src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80"
-            alt="團隊法律諮詢與專業討論"
-          />
-          <div>
-            <span class="feature-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M5 12h8m-8 4h11M5 8h14M19 18l3 3M17 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h2>專業繁體中文回覆</h2>
-            <p>以條理化格式輸出重點結論、法律分析、實務建議與風險提醒。</p>
-          </div>
-        </article>
-      </section>
-
-      <section id="assistant" class="assistant-panel">
-        <div class="panel-head">
-          <h2>即時法律問答</h2>
-          <p>可直接輸入你的香港法律問題，由 AI 助手提供專業參考分析。</p>
-        </div>
-
-        <section id="chat" class="chat" aria-live="polite">
-          <article class="message assistant">
-            <div class="bubble">
-              你好，我是香港法律 AI 助手。你可以直接提問，例如：
-              「僱主可否即時解僱員工？」或「租客欠租，業主可如何追討？」
-            </div>
-          </article>
-        </section>
-
-        <form id="ask-form" class="ask-form">
-          <label for="question" class="sr-only">輸入法律問題</label>
+      <section class="card">
+        <form id="video-form">
+          <label for="prompt">Prompt</label>
           <textarea
-            id="question"
-            name="question"
-            rows="4"
-            maxlength="3000"
-            placeholder="請輸入你的香港法律問題..."
+            id="prompt"
+            name="prompt"
+            rows="6"
+            maxlength="2000"
+            placeholder="Example: A cinematic drone shot flying over snowy mountains at sunrise."
             required
           ></textarea>
-          <button type="submit" id="submit-btn">送出問題</button>
+
+          <div class="grid">
+            <label>
+              Duration (seconds)
+              <select name="duration">
+                <option value="4">4</option>
+                <option value="5" selected>5</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="15">15</option>
+              </select>
+            </label>
+
+            <label>
+              Resolution
+              <select name="resolution">
+                <option value="480p">480p</option>
+                <option value="720p" selected>720p</option>
+                <option value="1080p">1080p</option>
+              </select>
+            </label>
+
+            <label>
+              Aspect ratio
+              <select name="aspectRatio">
+                <option value="16:9" selected>16:9</option>
+                <option value="9:16">9:16</option>
+                <option value="1:1">1:1</option>
+                <option value="4:3">4:3</option>
+                <option value="3:4">3:4</option>
+                <option value="21:9">21:9</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" name="generateAudio" checked />
+            Generate audio
+          </label>
+
+          <button id="generate-button" type="submit">Generate video</button>
         </form>
       </section>
 
-      <section id="about" class="brand-showcase">
-        <div class="showcase-media">
-          <img
-            src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=1200&q=80"
-            alt="專業法律團隊辦公空間"
-          />
-        </div>
-        <div class="showcase-content">
-          <p class="eyebrow">Professional Brand Presence</p>
-          <h2>建立可信賴的法律科技品牌形象</h2>
-          <p>
-            平台採用專業視覺語言、圖像化服務展示與清晰互動流程，讓客戶在短時間內理解你的法律服務價值與回應能力。
-          </p>
-          <ul class="icon-list">
-            <li>
-              <span aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M4 12h16M12 4v16"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </span>
-              一站式法律平台：整合香港法律 AI 問答與律師名冊服務
-            </li>
-            <li>
-              <span aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M5 12.5 9.2 17 19 7"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-              精準尋找律師：可按姓名、律師行及法律範疇快速篩選
-            </li>
-            <li>
-              <span aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M4 19h16M7 16V8m5 8V5m5 11v-6"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-              用戶參與評論：客戶可註冊帳號分享真實委託經驗與評分
-            </li>
-          </ul>
+      <section class="card">
+        <h2>Status</h2>
+        <p id="status-text">Waiting for prompt...</p>
+        <p id="task-id"></p>
+      </section>
+
+      <section class="card hidden" id="result-card">
+        <h2>Result</h2>
+        <video id="result-video" controls playsinline></video>
+        <div class="actions">
+          <a id="download-link" class="button-link" href="#">Download video</a>
+          <a id="open-link" class="button-link secondary" href="#" target="_blank" rel="noreferrer"
+            >Open source URL</a
+          >
         </div>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div>
-          <p class="footer-brand">LexBridge HK · 香港法律 AI 顧問平台</p>
-          <p class="footer-meta">
-            © 2026 LexBridge HK. All rights reserved. 內容僅供法律資訊參考。
-          </p>
-        </div>
-        <div class="footer-icons" aria-label="品牌社群">
-          <a href="#" aria-label="LinkedIn">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M7 9v8M7 7h.01M11 17v-5a3 3 0 0 1 6 0v5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </a>
-          <a href="#" aria-label="Facebook">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M14 7h2V3h-2a4 4 0 0 0-4 4v2H8v4h2v8h4v-8h2.5l.5-4H14V7a1 1 0 0 1 1-1Z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </a>
-          <a href="#" aria-label="Email">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M4 6h16v12H4zM4 8l8 6 8-6"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </footer>
-
-    <script src="/script.js" type="module"></script>
+    <script src="/app.js" defer></script>
   </body>
 </html>

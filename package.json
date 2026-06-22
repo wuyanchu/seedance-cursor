@@ -1,24 +1,26 @@
 {
-  "name": "hong-kong-law-ai-web",
+  "name": "new-project",
   "version": "1.0.0",
-  "description": "香港法律 AI 問答網站（繁體中文）",
+  "description": "Starter Node.js + Express project scaffold.",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js"
   },
   "keywords": [
-    "hong-kong",
-    "law",
-    "ai",
-    "chatbot",
-    "traditional-chinese"
+    "starter",
+    "nodejs",
+    "express"
   ],
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "openai": "^6.44.0"
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

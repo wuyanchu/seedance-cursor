@@ -1,136 +1,63 @@
-# 香港法律 AI 問答網站（繁體中文）
+# Seedance 2.0 Video Generator Website
 
-這是一個可直接部署的香港法律 AI 問答網站。使用者可用繁體中文提問香港法律問題，系統會透過 AI 回覆法律重點、分析與下一步建議；同時提供律師名冊分頁，支援搜尋、法律範疇分類與評論功能。
+This project provides a client-facing website that:
 
-> 注意：本系統僅供資訊參考，並非正式法律意見。
+1. accepts a text prompt,
+2. requests video generation from Seedance 2.0,
+3. polls until the task finishes, and
+4. lets the client preview and download the generated video.
 
-## 功能
+## Requirements
 
-- 繁體中文聊天介面
-- 香港法律情境化 AI 提示詞（僱傭、租務、公司、民刑事等）
-- 支援多輪對話（保留最近對話脈絡）
-- 未設定 API 金鑰時，會提示管理員如何設定
-- 律師名冊分頁（`/lawyers.html`）：
-  - 以律師姓名（中/英）或律師行名稱即時搜尋
-  - 按法律範疇分類瀏覽（離婚、刑事、物業買賣等）
-  - 用戶可註冊 / 登入後撰寫評論
+- Node.js 18+
+- A valid Seedance API key
 
-## 需求
+## Configuration
 
-- Node.js 18+（建議 LTS）
-- 任一 AI 金鑰：
-  - DeepSeek（`DEEPSEEK_API_KEY`，建議）
-  - 或 OpenAI 相容（`OPENAI_API_KEY`）
+Copy and edit environment variables:
 
-## 安裝與啟動
+```bash
+cp .env.example .env
+```
+
+Required:
+
+- `SEEDANCE_API_KEY` - your API key
+
+Common defaults are already provided:
+
+- `SEEDANCE_BASE_URL=https://ark.cn-beijing.volces.com`
+- `SEEDANCE_MODEL=doubao-seedance-2-0-fast-260128`
+- `SEEDANCE_TIMEOUT_MS=300000`
+- `SEEDANCE_POLL_INTERVAL_MS=3000`
+
+If your Seedance account uses a different host or model name, update those values.
+
+## Run
 
 ```bash
 npm install
-cp .env.example .env
-# 編輯 .env，填入 DEEPSEEK_API_KEY（或 OPENAI_API_KEY）
+npm run dev
+```
+
+Production-style start:
+
+```bash
 npm start
 ```
 
-啟動後開啟：
+Open:
 
-`http://localhost:3000`
+`http://localhost:3001`
 
-律師名冊頁面：
+## Scripts
 
-`http://localhost:3000/lawyers.html`
+- `npm run dev` - start with nodemon
+- `npm start` - start with Node.js
+- `npm run check` - syntax check
 
-## 環境變數
+## API Endpoints
 
-### DeepSeek（建議）
-
-- `DEEPSEEK_API_KEY`：必填（若使用 DeepSeek）
-- `DEEPSEEK_MODEL`：選填，預設 `deepseek-chat`
-- `DEEPSEEK_BASE_URL`：選填，預設 `https://api.deepseek.com/v1`
-
-### OpenAI（可選）
-
-- `OPENAI_API_KEY`：必填（若使用 OpenAI）
-- `OPENAI_MODEL`：選填，預設 `gpt-4.1-mini`
-- `OPENAI_BASE_URL`：選填，自訂相容 API 基底網址
-
-### 其他
-
-- `PORT`：選填，預設 `3000`
-
-## API
-
-### `POST /api/ask`
-
-請求：
-
-```json
-{
-  "question": "僱主可以無通知金即時解僱嗎？",
-  "history": [
-    { "role": "user", "content": "..." },
-    { "role": "assistant", "content": "..." }
-  ]
-}
-```
-
-回應：
-
-```json
-{
-  "answer": "AI 回答內容..."
-}
-```
-
-### `GET /api/law-categories`
-
-取得所有可用法律範疇分類。
-
-### `GET /api/lawyers?query=&category=&page=&pageSize=`
-
-搜尋或篩選律師名冊。
-
-- `query`：律師姓名（中/英）或律師行關鍵字
-- `category`：法律範疇（例如 `離婚及家庭`）
-- `page`：頁碼，預設 `1`
-- `pageSize`：每頁筆數，預設 `12`
-
-### `GET /api/lawyers/:lawyerId`
-
-取得單一律師詳細資料與平均評分。
-
-### `GET /api/lawyers/:lawyerId/reviews`
-
-取得指定律師的評論列表。
-
-### `POST /api/lawyers/:lawyerId/reviews`
-
-提交或更新評論（需登入，Bearer Token）。
-
-請求：
-
-```json
-{
-  "rating": 5,
-  "comment": "律師回覆迅速，文件準備完整，流程解釋清晰。"
-}
-```
-
-### `POST /api/auth/register`
-
-用戶註冊並取得登入 token。
-
-### `POST /api/auth/login`
-
-用戶登入並取得登入 token。
-
-### `GET /api/auth/me`
-
-取得目前登入用戶資訊（需 Bearer Token）。
-
-## 名冊資料說明
-
-- 律師名冊資料檔：`data/lawyers.json`
-- 用戶資料檔：`data/users.json`
-- 評論資料檔：`data/reviews.json`
-
-你可將 `data/lawyers.json` 按香港律師會公開名冊來源持續更新，以提供更完整的搜尋與分類結果。
+- `GET /api/health` - server status and Seedance config status
+- `POST /api/videos/generate` - create and poll a Seedance generation task
+- `GET /api/videos/download?url=...` - proxy video download as an attachment
