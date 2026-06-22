@@ -1,0 +1,24 @@
+{
+  "name": "hong-kong-law-ai-web",
+  "version": "1.0.0",
+  "description": "香港法律 AI 問答網站（繁體中文）",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "hong-kong",
+    "law",
+    "ai",
+    "chatbot",
+    "traditional-chinese"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^6.44.0"
+  }
+}
