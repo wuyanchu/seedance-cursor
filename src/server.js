@@ -53,6 +53,12 @@ const CREDIT_PACKAGES = Object.freeze([
     description: "Large top-up pack for frequent video generation.",
   },
 ]);
+const DEMO_VIDEO_URLS = Object.freeze([
+  "https://static.seedancev2.ai/uploads/videos/seedance2-page-03-stadium-template.mp4",
+  "https://static.seedancev2.ai/uploads/videos/seedance2-page-07-london-street-lady.mp4",
+  "https://static.seedancev2.ai/uploads/videos/seedance2-page-02-rain-dance-template.mp4",
+  "https://static.seedancev2.ai/uploads/videos/seedance2-hero-1.mp4",
+]);
 const sessions = new Map();
 const storageReady = initializeStorage();
 
@@ -286,6 +292,11 @@ function validateCardPayment(card) {
 
 function findCreditPackage(packageId) {
   return CREDIT_PACKAGES.find((entry) => entry.id === packageId);
+}
+
+function selectDemoVideoUrl(prompt) {
+  const seed = Array.from(String(prompt || "")).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return DEMO_VIDEO_URLS[seed % DEMO_VIDEO_URLS.length];
 }
 
 function extractTaskId(payload) {
@@ -612,12 +623,6 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
 });
 
 app.post("/api/videos/generate", requireAuth, async (req, res) => {
-  if (!SEEDANCE_API_KEY) {
-    return res.status(500).json({
-      error: "Server is missing SEEDANCE_API_KEY. Add it to your .env file.",
-    });
-  }
-
   const prompt = String(req.body?.prompt || "").trim();
   const resolution = String(req.body?.resolution || "720p").trim();
   const aspectRatio = String(req.body?.aspectRatio || "16:9").trim();
@@ -639,6 +644,22 @@ app.post("/api/videos/generate", requireAuth, async (req, res) => {
   if (Number(req.client.credits || 0) < GENERATION_CREDIT_COST) {
     return res.status(402).json({
       error: "You need at least 1 credit to generate a video. Please buy credits first.",
+    });
+  }
+
+  if (!SEEDANCE_API_KEY) {
+    const taskId = `demo-${crypto.randomUUID()}`;
+    const videoUrl = selectDemoVideoUrl(prompt);
+    const safeFilename = `${taskId}.mp4`;
+
+    return res.status(201).json({
+      taskId,
+      videoUrl,
+      downloadUrl: `/api/videos/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename)}`,
+      creditsRemaining: Number(req.client.credits || 0),
+      demo: true,
+      notice:
+        "Demo video returned because the server is missing SEEDANCE_API_KEY. Add the key to enable real Seedance generation.",
     });
   }
 

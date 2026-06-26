@@ -343,7 +343,7 @@ form.addEventListener("submit", async (event) => {
       throw new Error("Generation finished but video URLs were missing.");
     }
 
-    setStatus("Video generated successfully.");
+    setStatus(payload.notice || "Video generated successfully.");
     if (Number.isFinite(payload.creditsRemaining)) {
       updateClient({
         ...state.client,
