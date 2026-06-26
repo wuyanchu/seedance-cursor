@@ -121,6 +121,25 @@ a {
   text-align: center;
 }
 
+.deal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: linear-gradient(90deg, #581c87, #be185d, #ea580c);
+  color: white;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.deal-bar a {
+  color: #fef3c7;
+  font-weight: 950;
+  text-decoration: none;
+}
+
 .promo-bar a {
   color: #fde68a;
   text-decoration: none;
@@ -403,6 +422,26 @@ button:disabled,
   font-size: 1.2rem;
 }
 
+.prompt-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.prompt-chip-grid span {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(124, 58, 237, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-soft);
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
 .hero-collage {
   display: grid;
   min-height: 520px;
@@ -463,6 +502,22 @@ button:disabled,
   text-align: center;
 }
 
+.model-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.model-strip span {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.06);
+  color: #344054;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
 .hero-form {
   display: grid;
   gap: 4px;
@@ -514,6 +569,14 @@ button:disabled,
 
 .section-heading.centered h2 {
   max-width: 860px;
+}
+
+.section-subtitle {
+  max-width: 820px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.7;
 }
 
 .section-heading.compact {
@@ -867,8 +930,56 @@ textarea {
 .testimonial-section,
 .faq-section,
 .pricing-section,
+.template-section,
 .cta-section {
   margin-top: 58px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.template-grid article {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 100%;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.84)) padding-box,
+    linear-gradient(135deg, rgba(124, 58, 237, 0.34), rgba(236, 72, 153, 0.24), rgba(6, 182, 212, 0.28))
+      border-box;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-soft);
+}
+
+.template-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.template-grid article div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.template-grid article div strong {
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.08);
+  color: #5b21b6;
+  font-size: 0.78rem;
+}
+
+.template-cta {
+  margin: 18px auto 0;
 }
 
 .billing-toggle {
@@ -1123,14 +1234,17 @@ textarea {
   position: relative;
 }
 
-.testimonial-grid article::before {
-  display: block;
-  margin-bottom: 12px;
-  color: var(--pink);
-  content: "\"";
-  font-size: 3rem;
-  font-weight: 900;
-  line-height: 0.7;
+.step-number {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), var(--pink));
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 950;
 }
 
 .testimonial-grid strong {
@@ -1460,6 +1574,7 @@ textarea {
   .testimonial-grid,
   .pricing-grid,
   .credit-pack-grid,
+  .template-grid,
   .image-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1471,6 +1586,12 @@ textarea {
 
 @media (max-width: 720px) {
   .promo-bar {
+    align-items: center;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .deal-bar {
     align-items: center;
     flex-direction: column;
     gap: 4px;
@@ -1519,6 +1640,7 @@ textarea {
   .testimonial-grid,
   .pricing-grid,
   .credit-pack-grid,
+  .template-grid,
   .image-gallery {
     grid-template-columns: 1fr;
   }
