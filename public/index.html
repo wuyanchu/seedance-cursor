@@ -80,7 +80,17 @@
             <span>Watermark Tools</span>
           </div>
 
-          <form id="video-form" class="hero-form">
+          <div class="prompt-login-panel" id="prompt-login-panel">
+            <p class="eyebrow">Login required</p>
+            <h2>Log in to open the prompt area.</h2>
+            <p>
+              Create an account or log in first, then the Seedance 2.0 prompt editor and generation
+              controls will appear here.
+            </p>
+            <a class="button-link" href="#account">Log in or create account</a>
+          </div>
+
+          <form id="video-form" class="hero-form hidden">
             <div class="model-strip">
               <span>Seedance 2.0 Fast-CN</span>
               <span>Text to Video</span>
@@ -148,6 +158,71 @@
               <span class="button-label">Generate video</span>
             </button>
           </form>
+
+          <section class="showcase-video-section prompt-showcase" id="showcase-videos">
+            <div class="section-heading compact">
+              <div>
+                <p class="eyebrow">Seedance 2.0 showcase</p>
+                <h2>Examples inside the prompt area.</h2>
+              </div>
+              <a class="button-link secondary" href="https://seedancev2.ai/showcases" target="_blank" rel="noreferrer"
+                >Source gallery</a
+              >
+            </div>
+
+            <div class="showcase-video-grid">
+              <article class="showcase-video-card">
+                <video
+                  autoplay
+                  loop
+                  controls
+                  muted
+                  playsinline
+                  preload="metadata"
+                  src="https://static.seedancev2.ai/uploads/videos/seedance2-page-03-stadium-template.mp4"
+                ></video>
+                <div>
+                  <span class="showcase-tag">Cinematic</span>
+                  <h3>Stadium Template Final Video</h3>
+                  <p>A stadium-scale Seedance 2.0 example with crowd energy and theatrical scale.</p>
+                </div>
+              </article>
+
+              <article class="showcase-video-card">
+                <video
+                  autoplay
+                  loop
+                  controls
+                  muted
+                  playsinline
+                  preload="metadata"
+                  src="https://static.seedancev2.ai/uploads/videos/seedance2-page-07-london-street-lady.mp4"
+                ></video>
+                <div>
+                  <span class="showcase-tag">Character</span>
+                  <h3>London Street Lady</h3>
+                  <p>A polished character-motion clip with controlled movement and street style.</p>
+                </div>
+              </article>
+
+              <article class="showcase-video-card">
+                <video
+                  autoplay
+                  loop
+                  controls
+                  muted
+                  playsinline
+                  preload="metadata"
+                  src="https://static.seedancev2.ai/uploads/videos/seedance2-page-02-rain-dance-template.mp4"
+                ></video>
+                <div>
+                  <span class="showcase-tag">Motion</span>
+                  <h3>Dance Motion Result</h3>
+                  <p>A dance result with expressive movement, timing, and smooth continuity.</p>
+                </div>
+              </article>
+            </div>
+          </section>
 
           <div class="hero-preview-panel">
             <div class="status-card mini-status">
@@ -412,71 +487,6 @@
             <button id="purchase-button" type="submit">Buy credits</button>
           </form>
         </article>
-      </section>
-
-      <section class="showcase-video-section" id="showcase-videos">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Seedance 2.0 showcase</p>
-            <h2>Fantastic public examples that autoplay for instant inspiration.</h2>
-          </div>
-          <a class="button-link secondary" href="https://seedancev2.ai/showcases" target="_blank" rel="noreferrer"
-            >View source gallery</a
-          >
-        </div>
-
-        <div class="showcase-video-grid">
-          <article class="showcase-video-card">
-            <video
-              autoplay
-              loop
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              src="https://static.seedancev2.ai/uploads/videos/seedance2-page-03-stadium-template.mp4"
-            ></video>
-            <div>
-              <span class="showcase-tag">Cinematic</span>
-              <h3>Stadium Template Final Video</h3>
-              <p>A stadium-scale Seedance 2.0 example with crowd energy and theatrical scale.</p>
-            </div>
-          </article>
-
-          <article class="showcase-video-card">
-            <video
-              autoplay
-              loop
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              src="https://static.seedancev2.ai/uploads/videos/seedance2-page-07-london-street-lady.mp4"
-            ></video>
-            <div>
-              <span class="showcase-tag">Character</span>
-              <h3>London Street Lady</h3>
-              <p>A polished character-motion clip with controlled movement and street style.</p>
-            </div>
-          </article>
-
-          <article class="showcase-video-card">
-            <video
-              autoplay
-              loop
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              src="https://static.seedancev2.ai/uploads/videos/seedance2-page-02-rain-dance-template.mp4"
-            ></video>
-            <div>
-              <span class="showcase-tag">Motion</span>
-              <h3>Dance Motion Result</h3>
-              <p>A dance result with expressive movement, timing, and smooth continuity.</p>
-            </div>
-          </article>
-        </div>
       </section>
 
       <section class="special-section" id="what-is">

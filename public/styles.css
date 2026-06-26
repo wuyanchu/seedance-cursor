@@ -523,6 +523,29 @@ button:disabled,
   gap: 4px;
 }
 
+.prompt-login-panel {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(236, 72, 153, 0.12), transparent 16rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74));
+  box-shadow: var(--shadow-soft);
+}
+
+.prompt-login-panel h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+}
+
+.prompt-login-panel p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .hero-preview-panel {
   display: grid;
   gap: 12px;
@@ -872,10 +895,44 @@ textarea {
   margin-top: 42px;
 }
 
+.prompt-showcase {
+  margin-top: 6px;
+}
+
 .showcase-video-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.prompt-showcase .showcase-video-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.prompt-showcase .section-heading.compact {
+  margin-bottom: 12px;
+}
+
+.prompt-showcase .section-heading h2 {
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+}
+
+.prompt-showcase .showcase-video-card {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.9fr) minmax(0, 1fr);
+}
+
+.prompt-showcase .showcase-video-card video {
+  height: 100%;
+}
+
+.prompt-showcase .showcase-video-card div {
+  padding: 14px;
+}
+
+.prompt-showcase .showcase-video-card p {
+  font-size: 0.9rem;
 }
 
 .showcase-video-card {
@@ -1630,6 +1687,10 @@ textarea {
   .hero-collage img,
   .directory-hero img {
     min-height: 220px;
+  }
+
+  .prompt-showcase .showcase-video-card {
+    grid-template-columns: 1fr;
   }
 
   .lawyer-results,

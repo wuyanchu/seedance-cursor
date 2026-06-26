@@ -10,6 +10,7 @@ const state = {
 const form = document.getElementById("video-form");
 const generateButton = document.getElementById("generate-button");
 const generateButtonLabel = generateButton.querySelector(".button-label");
+const promptLoginPanel = document.getElementById("prompt-login-panel");
 const statusText = document.getElementById("status-text");
 const taskIdText = document.getElementById("task-id");
 const resultCard = document.getElementById("result-card");
@@ -90,12 +91,16 @@ function updateAuthUi() {
   if (state.client) {
     authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
     creditBalance.textContent = String(state.client.credits || 0);
+    promptLoginPanel.classList.add("hidden");
+    form.classList.remove("hidden");
     logoutButton.classList.remove("hidden");
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
   } else {
     authStatus.textContent = "Create an account or log in to generate videos.";
     creditBalance.textContent = "0";
+    promptLoginPanel.classList.remove("hidden");
+    form.classList.add("hidden");
     logoutButton.classList.add("hidden");
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
@@ -157,6 +162,7 @@ async function loadPackages() {
 async function restoreSession() {
   updateAuthUi();
   if (!state.token) {
+    clearSession();
     return;
   }
 
