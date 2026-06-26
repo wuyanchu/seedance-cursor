@@ -11,62 +11,142 @@
     <div class="bg-orb orb-2" aria-hidden="true"></div>
     <div class="bg-orb orb-3" aria-hidden="true"></div>
 
+    <div class="promo-bar">
+      <span>Seedance 2.0 inspiration studio is live</span>
+      <a href="#generator">Create cinematic AI video</a>
+    </div>
+
     <header class="top-nav">
       <div class="nav-inner">
         <a href="/" class="brand">
           <span class="brand-icon" aria-hidden="true">S2</span>
           <span class="brand-text">
             <strong>Seedance Studio</strong>
-            <small>Colorful AI video generator</small>
+            <small>Independent AI video inspiration community</small>
           </span>
         </a>
         <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#generator">Generator</a>
+          <a href="#special">Special</a>
+          <a href="#features">Features</a>
+          <a href="#use-cases">Use cases</a>
+          <a href="#faq">FAQ</a>
           <a href="#account">Account</a>
-          <a href="#generator">Create</a>
-          <a href="#showcase-videos">Showcase</a>
-          <a href="#inspiration">Inspiration</a>
         </nav>
       </div>
     </header>
 
     <main class="page">
-      <section class="hero video-hero">
+      <section class="hero video-hero" id="generator">
         <div class="hero-content">
-          <p class="eyebrow">Text to video magic</p>
-          <h1>Turn a tiny prompt into a bright cinematic story.</h1>
+          <p class="eyebrow">2026 Seedance 2.0 is now available</p>
+          <h1>Create cinematic AI videos with Seedance 2.0.</h1>
           <p>
-            Describe a mood, scene, color palette, or camera move. Seedance Studio transforms your
-            words into a downloadable video with a vivid, gallery-inspired workspace.
+            Native multi-shot storytelling, smooth motion, synchronized audio, and bright cinematic
+            style. Generate professional videos from text prompts, then download and share them.
           </p>
           <div class="hero-actions">
-            <a class="button-link" href="#generator">Start generating</a>
-            <a class="button-link secondary" href="#inspiration">Browse ideas</a>
+            <a class="button-link" href="#generator">Create Seedance 2.0 video</a>
+            <a class="button-link secondary" href="#showcase-videos">Watch examples</a>
           </div>
           <div class="stat-strip" aria-label="Generation highlights">
+            <span><strong>2K</strong> cinema-style output</span>
             <span><strong>6</strong> aspect ratios</span>
-            <span><strong>15s</strong> max duration</span>
-            <span><strong>1080p</strong> output</span>
+            <span><strong>Audio</strong> generation</span>
           </div>
         </div>
 
-        <div class="hero-collage" aria-label="Colorful video inspiration gallery">
-          <img
-            class="collage-large"
-            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
-            alt="Sunlit landscape with a cinematic view"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=600&q=80"
-            alt="Neon city street at night"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
-            alt="Turquoise ocean waves"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80"
-            alt="Misty colorful forest"
-          />
+        <div class="hero-generator-card">
+          <div class="generator-tabs" aria-label="Generation modes">
+            <span>Text to Video</span>
+            <span>Image to Video</span>
+            <span>Multi Reference</span>
+          </div>
+
+          <form id="video-form" class="hero-form">
+            <label for="prompt">Prompt</label>
+            <textarea
+              id="prompt"
+              name="prompt"
+              rows="6"
+              maxlength="2000"
+              placeholder="Example: A multi-shot cinematic trailer of a neon city chase, sweeping dolly camera, dramatic lighting."
+              required
+            ></textarea>
+
+            <div class="prompt-suggestions" aria-label="Prompt inspiration examples">
+              <span>Multi-shot story</span>
+              <span>Native audio scene</span>
+              <span>Product ad concept</span>
+            </div>
+
+            <div class="grid">
+              <label>
+                Duration
+                <select name="duration">
+                  <option value="4">4s</option>
+                  <option value="5" selected>5s</option>
+                  <option value="8">8s</option>
+                  <option value="10">10s</option>
+                  <option value="12">12s</option>
+                  <option value="15">15s</option>
+                </select>
+              </label>
+
+              <label>
+                Ratio
+                <select name="aspectRatio">
+                  <option value="16:9" selected>16:9</option>
+                  <option value="9:16">9:16</option>
+                  <option value="1:1">1:1</option>
+                  <option value="4:3">4:3</option>
+                  <option value="3:4">3:4</option>
+                  <option value="21:9">21:9</option>
+                </select>
+              </label>
+
+              <label>
+                Resolution
+                <select name="resolution">
+                  <option value="480p">480p</option>
+                  <option value="720p" selected>720p</option>
+                  <option value="1080p">1080p</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="checkbox-row">
+              <input type="checkbox" name="generateAudio" checked />
+              Generate audio
+            </label>
+
+            <button id="generate-button" type="submit">
+              <span class="button-spinner" aria-hidden="true"></span>
+              <span class="button-label">Generate video</span>
+            </button>
+          </form>
+
+          <div class="hero-preview-panel">
+            <div class="status-card mini-status">
+              <h2>Status</h2>
+              <p id="status-text">Waiting for prompt...</p>
+              <p id="task-id"></p>
+            </div>
+            <section class="hidden result-card" id="result-card">
+              <h2>Seedance 2.0 AI Video Result</h2>
+              <video id="result-video" controls playsinline autoplay muted></video>
+              <div class="actions">
+                <a id="download-link" class="button-link" href="#">Download video</a>
+                <a id="open-link" class="button-link secondary" href="#" target="_blank" rel="noreferrer"
+                  >Open source URL</a
+                >
+              </div>
+            </section>
+            <div class="preview-note">
+              <strong>Preview Example</strong>
+              <span>Generation can take a few minutes. Please keep this tab open.</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -167,119 +247,11 @@
         </article>
       </section>
 
-      <section class="generator-shell" id="generator">
-        <div class="section-heading">
-          <p class="eyebrow">Create your video</p>
-          <h2>Choose a visual direction and generate.</h2>
-        </div>
-
-        <div class="creative-grid">
-          <section class="card form-card">
-            <form id="video-form">
-              <label for="prompt">Prompt</label>
-              <textarea
-                id="prompt"
-                name="prompt"
-                rows="6"
-                maxlength="2000"
-                placeholder="Example: A cinematic drone shot flying over snowy mountains at sunrise."
-                required
-              ></textarea>
-
-              <div class="prompt-suggestions" aria-label="Prompt inspiration examples">
-                <span>Golden-hour travel film</span>
-                <span>Cyberpunk food market</span>
-                <span>Dreamy product reveal</span>
-              </div>
-
-              <div class="grid">
-                <label>
-                  Duration (seconds)
-                  <select name="duration">
-                    <option value="4">4</option>
-                    <option value="5" selected>5</option>
-                    <option value="8">8</option>
-                    <option value="10">10</option>
-                    <option value="12">12</option>
-                    <option value="15">15</option>
-                  </select>
-                </label>
-
-                <label>
-                  Resolution
-                  <select name="resolution">
-                    <option value="480p">480p</option>
-                    <option value="720p" selected>720p</option>
-                    <option value="1080p">1080p</option>
-                  </select>
-                </label>
-
-                <label>
-                  Aspect ratio
-                  <select name="aspectRatio">
-                    <option value="16:9" selected>16:9</option>
-                    <option value="9:16">9:16</option>
-                    <option value="1:1">1:1</option>
-                    <option value="4:3">4:3</option>
-                    <option value="3:4">3:4</option>
-                    <option value="21:9">21:9</option>
-                  </select>
-                </label>
-              </div>
-
-              <label class="checkbox-row">
-                <input type="checkbox" name="generateAudio" checked />
-                Generate audio
-              </label>
-
-              <button id="generate-button" type="submit">
-                <span class="button-spinner" aria-hidden="true"></span>
-                <span class="button-label">Generate video</span>
-              </button>
-            </form>
-          </section>
-
-          <aside class="preview-card">
-            <img
-              src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80"
-              alt="Camera lens and creative production setup"
-            />
-            <div>
-              <p class="eyebrow">Director notes</p>
-              <h3>Try adding lens, lighting, and camera motion details.</h3>
-              <p>
-                Prompts like "macro lens", "soft rim light", "slow dolly in", and "vibrant pastel
-                palette" help the model understand your intended look.
-              </p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section class="status-result-grid">
-        <section class="card status-card">
-          <h2>Status</h2>
-          <p id="status-text">Waiting for prompt...</p>
-          <p id="task-id"></p>
-        </section>
-
-        <section class="card hidden result-card" id="result-card">
-          <h2>Result</h2>
-          <video id="result-video" controls playsinline></video>
-          <div class="actions">
-            <a id="download-link" class="button-link" href="#">Download video</a>
-            <a id="open-link" class="button-link secondary" href="#" target="_blank" rel="noreferrer"
-              >Open source URL</a
-            >
-          </div>
-        </section>
-      </section>
-
       <section class="showcase-video-section" id="showcase-videos">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Seedance 2.0 showcase</p>
-            <h2>Three fantastic public examples to inspire your next prompt.</h2>
+            <h2>Fantastic public examples that autoplay for instant inspiration.</h2>
           </div>
           <a class="button-link secondary" href="https://seedancev2.ai/showcases" target="_blank" rel="noreferrer"
             >View source gallery</a
@@ -289,6 +261,8 @@
         <div class="showcase-video-grid">
           <article class="showcase-video-card">
             <video
+              autoplay
+              loop
               controls
               muted
               playsinline
@@ -298,15 +272,14 @@
             <div>
               <span class="showcase-tag">Cinematic</span>
               <h3>Stadium Template Final Video</h3>
-              <p>
-                A stadium-scale Seedance 2.0 example with crowd energy, big-camera movement, and a
-                theatrical sense of scale.
-              </p>
+              <p>A stadium-scale Seedance 2.0 example with crowd energy and theatrical scale.</p>
             </div>
           </article>
 
           <article class="showcase-video-card">
             <video
+              autoplay
+              loop
               controls
               muted
               playsinline
@@ -316,15 +289,14 @@
             <div>
               <span class="showcase-tag">Character</span>
               <h3>London Street Lady</h3>
-              <p>
-                A polished image-to-video clip showing controlled character motion and a stylish
-                city-street atmosphere.
-              </p>
+              <p>A polished image-to-video clip with controlled character motion and street style.</p>
             </div>
           </article>
 
           <article class="showcase-video-card">
             <video
+              autoplay
+              loop
               controls
               muted
               playsinline
@@ -334,70 +306,158 @@
             <div>
               <span class="showcase-tag">Motion</span>
               <h3>Reference Dance Result</h3>
-              <p>
-                A reference-driven dance result that highlights expressive movement, timing, and
-                smooth temporal continuity.
-              </p>
+              <p>A reference-driven dance result with expressive movement and smooth continuity.</p>
             </div>
           </article>
         </div>
       </section>
 
-      <section class="inspiration-section" id="inspiration">
-        <div class="section-heading">
-          <p class="eyebrow">Inspiration wall</p>
-          <h2>Picture-rich styles to spark your next prompt.</h2>
+      <section class="special-section" id="special">
+        <div class="section-heading centered">
+          <p class="eyebrow">What makes Seedance 2.0 special</p>
+          <h2>Advanced AI video generation for multi-shot cinematic stories.</h2>
         </div>
-        <div class="image-gallery">
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=80"
-              alt="Concert crowd with colorful lights"
-            />
-            <h3>Electric nightlife</h3>
-            <p>Neon, motion blur, bright crowds, and bold energy.</p>
+
+        <div class="special-stack">
+          <article class="special-row">
+            <div>
+              <span class="showcase-tag">Story</span>
+              <h3>Multi-shot storytelling</h3>
+              <p>
+                Generate cohesive sequences with consistent characters, atmosphere, and visual style
+                across scene changes.
+              </p>
+            </div>
+            <video autoplay loop muted playsinline preload="metadata" src="https://static.seedancev2.ai/uploads/videos/seedance2-hero-1.mp4"></video>
           </article>
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80"
-              alt="Person overlooking a desert canyon"
-            />
-            <h3>Epic travel</h3>
-            <p>Wide angles, sweeping landscapes, and sunrise colors.</p>
+
+          <article class="special-row reverse">
+            <div>
+              <span class="showcase-tag">Motion</span>
+              <h3>Natural motion synthesis</h3>
+              <p>
+                Create fluid physical movement from subtle expressions to dynamic action while
+                maintaining temporal stability.
+              </p>
+            </div>
+            <video autoplay loop muted playsinline preload="metadata" src="https://static.seedancev2.ai/uploads/videos/seedance2-director-1.mp4"></video>
           </article>
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=700&q=80"
-              alt="Modern product and colorful creative setup"
-            />
-            <h3>Product shine</h3>
-            <p>Glossy reflections, clean motion, and premium detail.</p>
-          </article>
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=80"
-              alt="Starry mountain sky with cinematic color"
-            />
-            <h3>Golden cinematic</h3>
-            <p>Soft haze, warm tones, and movie-trailer framing.</p>
-          </article>
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=80"
-              alt="Lush green forest with bright light"
-            />
-            <h3>Nature dream</h3>
-            <p>Fresh greens, glowing skies, and peaceful motion.</p>
-          </article>
-          <article>
-            <img
-              src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=700&q=80"
-              alt="Bright laptop workspace for social content"
-            />
-            <h3>Social splash</h3>
-            <p>Fast hooks, saturated color, and vertical-ready framing.</p>
+
+          <article class="special-row">
+            <div>
+              <span class="showcase-tag">Image to video</span>
+              <h3>Superior image-to-video consistency</h3>
+              <p>
+                Transform static visuals into polished motion while keeping subject identity,
+                lighting, and composition consistent.
+              </p>
+            </div>
+            <video autoplay loop muted playsinline preload="metadata" src="https://static.seedancev2.ai/uploads/videos/seedance2-page-06-seedance2-image-showcase.mp4"></video>
           </article>
         </div>
+      </section>
+
+      <section class="advantage-section">
+        <div class="section-heading centered">
+          <p class="eyebrow">Why choose Seedance 2.0</p>
+          <h2>Leading advantages for professional video creation.</h2>
+        </div>
+        <div class="advantage-grid">
+          <article>
+            <h3>Professional quality output</h3>
+            <p>Produce cinematic clips with flexible formats for social, ads, product pages, and storyboards.</p>
+          </article>
+          <article>
+            <h3>Advanced prompt understanding</h3>
+            <p>Describe camera moves, character actions, lighting, and pacing in natural language.</p>
+          </article>
+          <article>
+            <h3>Complete style flexibility</h3>
+            <p>Move between photorealistic, anime, stop motion, product, lifestyle, and surreal art directions.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="feature-section" id="features">
+        <div class="section-heading centered">
+          <p class="eyebrow">Key features of Seedance 2.0</p>
+          <h2>Powerful capabilities for an AI video generation platform.</h2>
+        </div>
+        <div class="feature-grid">
+          <article><h3>Multi-shot storytelling</h3><p>Build connected scenes with seamless transitions and consistent characters.</p></article>
+          <article><h3>2K-style cinematic quality</h3><p>Create polished videos optimized for landscape, portrait, square, and wide formats.</p></article>
+          <article><h3>Audio-video generation</h3><p>Generate audio with visuals for more immersive creative drafts.</p></article>
+          <article><h3>Image-to-video quality</h3><p>Animate still images while preserving facial features and visual identity.</p></article>
+          <article><h3>Natural motion synthesis</h3><p>Shape camera movement, gestures, action, and atmospheric motion.</p></article>
+          <article><h3>Versatile style control</h3><p>Prompt cinematic, product, stylized, animation, and social-first looks.</p></article>
+        </div>
+      </section>
+
+      <section class="use-case-section" id="use-cases">
+        <div class="section-heading centered">
+          <p class="eyebrow">Use cases for Seedance 2</p>
+          <h2>Creators, marketers, and filmmakers can generate professional video ideas in minutes.</h2>
+        </div>
+        <div class="use-case-grid">
+          <article><h3>Social media videos</h3><p>Create short-form concepts for TikTok, Reels, and YouTube Shorts.</p></article>
+          <article><h3>Marketing campaigns</h3><p>Test ad variations, campaign hooks, and brand visuals quickly.</p></article>
+          <article><h3>Product demonstrations</h3><p>Turn product photos into moving showcases with lifestyle scenes.</p></article>
+          <article><h3>Educational videos</h3><p>Transform lessons into memorable visual stories and explainers.</p></article>
+          <article><h3>Film previsualization</h3><p>Prototype scene concepts, camera movement, and action beats before production.</p></article>
+          <article><h3>Personal stories</h3><p>Bring photos, memories, and narrative moments to life with cinematic motion.</p></article>
+        </div>
+      </section>
+
+      <section class="testimonial-section">
+        <div class="section-heading centered">
+          <p class="eyebrow">Testimonials</p>
+          <h2>What creators say about Seedance 2.0.</h2>
+        </div>
+        <div class="testimonial-grid">
+          <article>
+            <p>"The multi-shot storytelling feels like a real leap for AI video previsualization."</p>
+            <strong>Film creator</strong>
+          </article>
+          <article>
+            <p>"Image-to-video keeps the subject stable while adding the kind of motion we need for ads."</p>
+            <strong>Marketing lead</strong>
+          </article>
+          <article>
+            <p>"The reference dance and character examples make it easier to prompt movement direction."</p>
+            <strong>Creative director</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="faq-section" id="faq">
+        <div class="section-heading centered">
+          <p class="eyebrow">FAQ</p>
+          <h2>Frequently asked questions about Seedance 2.0.</h2>
+        </div>
+        <div class="faq-list">
+          <details open>
+            <summary>What is Seedance 2.0?</summary>
+            <p>Seedance 2.0 is an AI video generation model for creating cinematic video from text and visual direction.</p>
+          </details>
+          <details>
+            <summary>What is multi-shot storytelling?</summary>
+            <p>It means generating connected scenes that preserve characters, style, and atmosphere across shot changes.</p>
+          </details>
+          <details>
+            <summary>Why do the showcase videos autoplay silently?</summary>
+            <p>Modern browsers allow reliable autoplay when videos are muted and set to play inline.</p>
+          </details>
+          <details>
+            <summary>How do credits work?</summary>
+            <p>Create an account, buy credits, and spend 1 credit for each successful video generation.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <p class="eyebrow">Start creating with Seedance 2.0 today</p>
+        <h2>Transform your ideas into stunning cinematic videos.</h2>
+        <a class="button-link" href="#generator">Create your first video</a>
       </section>
     </main>
 

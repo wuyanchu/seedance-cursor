@@ -69,6 +69,23 @@ function setGenerating(isGenerating) {
   generateButtonLabel.textContent = isGenerating ? "Generating video..." : "Generate video";
 }
 
+function tryPlayVideo(video) {
+  const playPromise = video.play();
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => {
+      // Browser autoplay policies can still block playback; controls remain visible.
+    });
+  }
+}
+
+function initAutoplayVideos() {
+  document.querySelectorAll("video[autoplay]").forEach((video) => {
+    video.muted = true;
+    video.playsInline = true;
+    tryPlayVideo(video);
+  });
+}
+
 function updateAuthUi() {
   if (state.client) {
     authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
@@ -307,7 +324,10 @@ form.addEventListener("submit", async (event) => {
     resultCard.classList.remove("hidden");
 
     resultVideo.src = payload.videoUrl;
+    resultVideo.muted = true;
+    resultVideo.autoplay = true;
     resultVideo.load();
+    resultVideo.addEventListener("loadedmetadata", () => tryPlayVideo(resultVideo), { once: true });
 
     downloadLink.href = payload.downloadUrl;
     openLink.href = payload.videoUrl;
@@ -321,6 +341,7 @@ form.addEventListener("submit", async (event) => {
 
 restoreSession()
   .then(loadPackages)
+  .then(initAutoplayVideos)
   .catch((error) => {
     console.error(error);
     setStatus(error instanceof Error ? error.message : "Unable to initialize account features.", true);
