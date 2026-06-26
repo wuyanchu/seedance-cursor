@@ -6,83 +6,227 @@
     <title>Seedance 2.0 Video Generator</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
-    <main class="container">
-      <header>
-        <h1>Seedance 2.0 Video Generator</h1>
-        <p>Generate a video from text, then download it.</p>
-      </header>
+  <body class="video-page">
+    <div class="bg-orb orb-1" aria-hidden="true"></div>
+    <div class="bg-orb orb-2" aria-hidden="true"></div>
+    <div class="bg-orb orb-3" aria-hidden="true"></div>
 
-      <section class="card">
-        <form id="video-form">
-          <label for="prompt">Prompt</label>
-          <textarea
-            id="prompt"
-            name="prompt"
-            rows="6"
-            maxlength="2000"
-            placeholder="Example: A cinematic drone shot flying over snowy mountains at sunrise."
-            required
-          ></textarea>
+    <header class="top-nav">
+      <div class="nav-inner">
+        <a href="/" class="brand">
+          <span class="brand-icon" aria-hidden="true">S2</span>
+          <span class="brand-text">
+            <strong>Seedance Studio</strong>
+            <small>Colorful AI video generator</small>
+          </span>
+        </a>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#generator">Create</a>
+          <a href="#inspiration">Inspiration</a>
+        </nav>
+      </div>
+    </header>
 
-          <div class="grid">
-            <label>
-              Duration (seconds)
-              <select name="duration">
-                <option value="4">4</option>
-                <option value="5" selected>5</option>
-                <option value="8">8</option>
-                <option value="10">10</option>
-                <option value="12">12</option>
-                <option value="15">15</option>
-              </select>
-            </label>
-
-            <label>
-              Resolution
-              <select name="resolution">
-                <option value="480p">480p</option>
-                <option value="720p" selected>720p</option>
-                <option value="1080p">1080p</option>
-              </select>
-            </label>
-
-            <label>
-              Aspect ratio
-              <select name="aspectRatio">
-                <option value="16:9" selected>16:9</option>
-                <option value="9:16">9:16</option>
-                <option value="1:1">1:1</option>
-                <option value="4:3">4:3</option>
-                <option value="3:4">3:4</option>
-                <option value="21:9">21:9</option>
-              </select>
-            </label>
+    <main class="page">
+      <section class="hero video-hero">
+        <div class="hero-content">
+          <p class="eyebrow">Text to video magic</p>
+          <h1>Turn a tiny prompt into a bright cinematic story.</h1>
+          <p>
+            Describe a mood, scene, color palette, or camera move. Seedance Studio transforms your
+            words into a downloadable video with a vivid, gallery-inspired workspace.
+          </p>
+          <div class="hero-actions">
+            <a class="button-link" href="#generator">Start generating</a>
+            <a class="button-link secondary" href="#inspiration">Browse ideas</a>
           </div>
+          <div class="stat-strip" aria-label="Generation highlights">
+            <span><strong>6</strong> aspect ratios</span>
+            <span><strong>15s</strong> max duration</span>
+            <span><strong>1080p</strong> output</span>
+          </div>
+        </div>
 
-          <label class="checkbox-row">
-            <input type="checkbox" name="generateAudio" checked />
-            Generate audio
-          </label>
-
-          <button id="generate-button" type="submit">Generate video</button>
-        </form>
+        <div class="hero-collage" aria-label="Colorful video inspiration gallery">
+          <img
+            class="collage-large"
+            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
+            alt="Sunlit landscape with a cinematic view"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=600&q=80"
+            alt="Neon city street at night"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+            alt="Turquoise ocean waves"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80"
+            alt="Misty colorful forest"
+          />
+        </div>
       </section>
 
-      <section class="card">
-        <h2>Status</h2>
-        <p id="status-text">Waiting for prompt...</p>
-        <p id="task-id"></p>
+      <section class="generator-shell" id="generator">
+        <div class="section-heading">
+          <p class="eyebrow">Create your video</p>
+          <h2>Choose a visual direction and generate.</h2>
+        </div>
+
+        <div class="creative-grid">
+          <section class="card form-card">
+            <form id="video-form">
+              <label for="prompt">Prompt</label>
+              <textarea
+                id="prompt"
+                name="prompt"
+                rows="6"
+                maxlength="2000"
+                placeholder="Example: A cinematic drone shot flying over snowy mountains at sunrise."
+                required
+              ></textarea>
+
+              <div class="prompt-suggestions" aria-label="Prompt inspiration examples">
+                <span>Golden-hour travel film</span>
+                <span>Cyberpunk food market</span>
+                <span>Dreamy product reveal</span>
+              </div>
+
+              <div class="grid">
+                <label>
+                  Duration (seconds)
+                  <select name="duration">
+                    <option value="4">4</option>
+                    <option value="5" selected>5</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                  </select>
+                </label>
+
+                <label>
+                  Resolution
+                  <select name="resolution">
+                    <option value="480p">480p</option>
+                    <option value="720p" selected>720p</option>
+                    <option value="1080p">1080p</option>
+                  </select>
+                </label>
+
+                <label>
+                  Aspect ratio
+                  <select name="aspectRatio">
+                    <option value="16:9" selected>16:9</option>
+                    <option value="9:16">9:16</option>
+                    <option value="1:1">1:1</option>
+                    <option value="4:3">4:3</option>
+                    <option value="3:4">3:4</option>
+                    <option value="21:9">21:9</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="checkbox-row">
+                <input type="checkbox" name="generateAudio" checked />
+                Generate audio
+              </label>
+
+              <button id="generate-button" type="submit">Generate video</button>
+            </form>
+          </section>
+
+          <aside class="preview-card">
+            <img
+              src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80"
+              alt="Camera lens and creative production setup"
+            />
+            <div>
+              <p class="eyebrow">Director notes</p>
+              <h3>Try adding lens, lighting, and camera motion details.</h3>
+              <p>
+                Prompts like "macro lens", "soft rim light", "slow dolly in", and "vibrant pastel
+                palette" help the model understand your intended look.
+              </p>
+            </div>
+          </aside>
+        </div>
       </section>
 
-      <section class="card hidden" id="result-card">
-        <h2>Result</h2>
-        <video id="result-video" controls playsinline></video>
-        <div class="actions">
-          <a id="download-link" class="button-link" href="#">Download video</a>
-          <a id="open-link" class="button-link secondary" href="#" target="_blank" rel="noreferrer"
-            >Open source URL</a
-          >
+      <section class="status-result-grid">
+        <section class="card status-card">
+          <h2>Status</h2>
+          <p id="status-text">Waiting for prompt...</p>
+          <p id="task-id"></p>
+        </section>
+
+        <section class="card hidden result-card" id="result-card">
+          <h2>Result</h2>
+          <video id="result-video" controls playsinline></video>
+          <div class="actions">
+            <a id="download-link" class="button-link" href="#">Download video</a>
+            <a id="open-link" class="button-link secondary" href="#" target="_blank" rel="noreferrer"
+              >Open source URL</a
+            >
+          </div>
+        </section>
+      </section>
+
+      <section class="inspiration-section" id="inspiration">
+        <div class="section-heading">
+          <p class="eyebrow">Inspiration wall</p>
+          <h2>Picture-rich styles to spark your next prompt.</h2>
+        </div>
+        <div class="image-gallery">
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=80"
+              alt="Concert crowd with colorful lights"
+            />
+            <h3>Electric nightlife</h3>
+            <p>Neon, motion blur, bright crowds, and bold energy.</p>
+          </article>
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80"
+              alt="Person overlooking a desert canyon"
+            />
+            <h3>Epic travel</h3>
+            <p>Wide angles, sweeping landscapes, and sunrise colors.</p>
+          </article>
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?auto=format&fit=crop&w=700&q=80"
+              alt="Modern product and colorful creative setup"
+            />
+            <h3>Product shine</h3>
+            <p>Glossy reflections, clean motion, and premium detail.</p>
+          </article>
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=80"
+              alt="Starry mountain sky with cinematic color"
+            />
+            <h3>Golden cinematic</h3>
+            <p>Soft haze, warm tones, and movie-trailer framing.</p>
+          </article>
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=80"
+              alt="Lush green forest with bright light"
+            />
+            <h3>Nature dream</h3>
+            <p>Fresh greens, glowing skies, and peaceful motion.</p>
+          </article>
+          <article>
+            <img
+              src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=700&q=80"
+              alt="Bright laptop workspace for social content"
+            />
+            <h3>Social splash</h3>
+            <p>Fast hooks, saturated color, and vertical-ready framing.</p>
+          </article>
         </div>
       </section>
     </main>
