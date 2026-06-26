@@ -5,6 +5,7 @@ const state = {
   token: localStorage.getItem(TOKEN_KEY) || "",
   client: null,
   packages: [],
+  loginRequested: false,
 };
 
 const form = document.getElementById("video-form");
@@ -19,9 +20,11 @@ const downloadLink = document.getElementById("download-link");
 const openLink = document.getElementById("open-link");
 const authStatus = document.getElementById("auth-status");
 const creditBalance = document.getElementById("credit-balance");
+const accountSection = document.getElementById("account");
 const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
 const logoutButton = document.getElementById("logout-button");
+const purchaseCard = document.getElementById("purchase-card");
 const purchaseForm = document.getElementById("purchase-form");
 const packageSelect = document.getElementById("package-select");
 const packageDetails = document.getElementById("package-details");
@@ -91,19 +94,31 @@ function updateAuthUi() {
   if (state.client) {
     authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
     creditBalance.textContent = String(state.client.credits || 0);
+    accountSection.classList.remove("hidden");
     promptLoginPanel.classList.add("hidden");
     form.classList.remove("hidden");
     logoutButton.classList.remove("hidden");
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
+    purchaseCard.classList.remove("hidden");
   } else {
     authStatus.textContent = "Create an account or log in to generate videos.";
     creditBalance.textContent = "0";
+    accountSection.classList.toggle("hidden", !state.loginRequested);
     promptLoginPanel.classList.remove("hidden");
     form.classList.add("hidden");
     logoutButton.classList.add("hidden");
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
+    purchaseCard.classList.add("hidden");
+  }
+}
+
+function revealLoginArea({ scroll = true } = {}) {
+  state.loginRequested = true;
+  updateAuthUi();
+  if (scroll) {
+    accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
@@ -160,12 +175,12 @@ async function loadPackages() {
 }
 
 async function restoreSession() {
-  updateAuthUi();
   if (!state.token) {
     clearSession();
     return;
   }
 
+  updateAuthUi();
   try {
     const payload = await apiFetch("/api/auth/me");
     updateClient(payload.client);
@@ -224,6 +239,13 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+document.querySelectorAll("[data-open-login]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    revealLoginArea();
+  });
+});
+
 logoutButton.addEventListener("click", async () => {
   try {
     await apiFetch("/api/auth/logout", { method: "POST" });
@@ -231,6 +253,8 @@ logoutButton.addEventListener("click", async () => {
     // Local logout should still work if the server session already expired.
   }
   clearSession();
+  state.loginRequested = false;
+  updateAuthUi();
   setStatus("Logged out.");
 });
 
@@ -241,7 +265,7 @@ purchaseForm.addEventListener("submit", async (event) => {
 
   if (!state.token) {
     setStatus("Please log in before buying credits.", true);
-    document.getElementById("account").scrollIntoView({ behavior: "smooth", block: "start" });
+    revealLoginArea();
     return;
   }
 
@@ -284,7 +308,7 @@ form.addEventListener("submit", async (event) => {
 
   if (!state.token) {
     setStatus("Please log in and buy credits before generating a video.", true);
-    document.getElementById("account").scrollIntoView({ behavior: "smooth", block: "start" });
+    revealLoginArea();
     return;
   }
 

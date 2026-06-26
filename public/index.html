@@ -37,7 +37,7 @@
           <a href="#creators">Creators</a>
           <a href="#how-it-works">How it works</a>
           <a href="#faq">FAQ</a>
-          <a href="#account">Account</a>
+          <a href="#account" data-open-login>Login</a>
         </nav>
       </div>
     </header>
@@ -87,7 +87,7 @@
               Create an account or log in first, then the Seedance 2.0 prompt editor and generation
               controls will appear here.
             </p>
-            <a class="button-link" href="#account">Log in or create account</a>
+            <a class="button-link" href="#account" data-open-login>Log in or create account</a>
           </div>
 
           <form id="video-form" class="hero-form hidden">
@@ -299,7 +299,7 @@
           <article class="pricing-card">
             <h3>Elite</h3>
             <p class="price"><strong>$33.33</strong><span>/ month</span></p>
-            <a class="button-link" href="#account">Subscribe</a>
+            <a class="button-link" href="#account" data-open-login>Subscribe</a>
             <h4>Features</h4>
             <ul>
               <li>153600 Universal AI Credits</li>
@@ -317,7 +317,7 @@
             <span class="plan-badge">Most Popular</span>
             <h3>Pro</h3>
             <p class="price"><strong>$16.67</strong><span>/ month</span></p>
-            <a class="button-link" href="#account">Subscribe</a>
+            <a class="button-link" href="#account" data-open-login>Subscribe</a>
             <h4>Features</h4>
             <ul>
               <li>74400 Universal AI Credits</li>
@@ -334,7 +334,7 @@
           <article class="pricing-card">
             <h3>Basic</h3>
             <p class="price"><strong>$8.33</strong><span>/ month</span></p>
-            <a class="button-link" href="#account">Subscribe</a>
+            <a class="button-link" href="#account" data-open-login>Subscribe</a>
             <h4>Features</h4>
             <ul>
               <li>36000 Universal AI Credits</li>
@@ -362,20 +362,20 @@
               <h3>Premium</h3>
               <p><strong>37,500</strong> Credits</p>
               <span>$99.99</span>
-              <a class="button-link secondary" href="#account">Buy Now</a>
+              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
             </article>
             <article class="featured-pack">
               <span class="plan-badge">Best Value</span>
               <h3>Growth</h3>
               <p><strong>13,800</strong> Credits</p>
               <span>$36.99</span>
-              <a class="button-link secondary" href="#account">Buy Now</a>
+              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
             </article>
             <article>
               <h3>Starter</h3>
               <p><strong>7,500</strong> Credits</p>
               <span>$19.99</span>
-              <a class="button-link secondary" href="#account">Buy Now</a>
+              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
             </article>
           </div>
         </div>
@@ -392,7 +392,7 @@
         </article>
       </section>
 
-      <section class="account-credit-grid" id="account">
+      <section class="account-credit-grid hidden" id="account">
         <article class="card account-card">
           <div class="section-heading compact">
             <div>
@@ -439,7 +439,7 @@
           <button id="logout-button" class="secondary-btn hidden" type="button">Log out</button>
         </article>
 
-        <article class="card purchase-card">
+        <article class="card purchase-card hidden" id="purchase-card">
           <p class="eyebrow">Buy credits</p>
           <h2>Pay by credit card.</h2>
           <p class="muted">
