@@ -1,15 +1,154 @@
+const TOKEN_KEY = "seedance_client_token";
+const CLIENT_KEY = "seedance_client";
+
+const state = {
+  token: localStorage.getItem(TOKEN_KEY) || "",
+  client: null,
+  packages: [],
+};
+
 const form = document.getElementById("video-form");
 const generateButton = document.getElementById("generate-button");
+const generateButtonLabel = generateButton.querySelector(".button-label");
 const statusText = document.getElementById("status-text");
 const taskIdText = document.getElementById("task-id");
 const resultCard = document.getElementById("result-card");
 const resultVideo = document.getElementById("result-video");
 const downloadLink = document.getElementById("download-link");
 const openLink = document.getElementById("open-link");
+const authStatus = document.getElementById("auth-status");
+const creditBalance = document.getElementById("credit-balance");
+const registerForm = document.getElementById("register-form");
+const loginForm = document.getElementById("login-form");
+const logoutButton = document.getElementById("logout-button");
+const purchaseForm = document.getElementById("purchase-form");
+const packageSelect = document.getElementById("package-select");
+const packageDetails = document.getElementById("package-details");
+const purchaseButton = document.getElementById("purchase-button");
+
+const cachedClientRaw = localStorage.getItem(CLIENT_KEY);
+if (cachedClientRaw) {
+  try {
+    state.client = JSON.parse(cachedClientRaw);
+  } catch {
+    state.client = null;
+  }
+}
+
+function updateClient(client) {
+  state.client = client;
+  if (client) {
+    localStorage.setItem(CLIENT_KEY, JSON.stringify(client));
+  } else {
+    localStorage.removeItem(CLIENT_KEY);
+  }
+  updateAuthUi();
+}
+
+function setSession(token, client) {
+  state.token = token;
+  localStorage.setItem(TOKEN_KEY, token);
+  updateClient(client);
+}
+
+function clearSession() {
+  state.token = "";
+  localStorage.removeItem(TOKEN_KEY);
+  updateClient(null);
+}
 
 function setStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.style.color = isError ? "#fda4af" : "#cbd5e1";
+}
+
+function setGenerating(isGenerating) {
+  generateButton.disabled = isGenerating;
+  generateButton.classList.toggle("is-loading", isGenerating);
+  generateButton.setAttribute("aria-busy", String(isGenerating));
+  generateButtonLabel.textContent = isGenerating ? "Generating video..." : "Generate video";
+}
+
+function updateAuthUi() {
+  if (state.client) {
+    authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
+    creditBalance.textContent = String(state.client.credits || 0);
+    logoutButton.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+    loginForm.classList.add("hidden");
+  } else {
+    authStatus.textContent = "Create an account or log in to generate videos.";
+    creditBalance.textContent = "0";
+    logoutButton.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+    loginForm.classList.remove("hidden");
+  }
+}
+
+async function apiFetch(url, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (state.token) {
+    headers.Authorization = `Bearer ${state.token}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload?.error || "Request failed.");
+  }
+
+  return payload;
+}
+
+function renderPackages(packages) {
+  packageSelect.innerHTML = "";
+
+  for (const creditPackage of packages) {
+    const option = document.createElement("option");
+    option.value = creditPackage.id;
+    option.textContent = `${creditPackage.name} - ${creditPackage.credits} credits (${creditPackage.priceLabel})`;
+    packageSelect.appendChild(option);
+  }
+
+  updatePackageDetails();
+}
+
+function updatePackageDetails() {
+  const selectedPackage = state.packages.find((entry) => entry.id === packageSelect.value);
+  if (!selectedPackage) {
+    packageDetails.textContent = "Select a package to see details.";
+    return;
+  }
+
+  packageDetails.innerHTML = `<strong>${selectedPackage.credits} credits</strong> for ${selectedPackage.priceLabel}. ${selectedPackage.description}`;
+}
+
+async function loadPackages() {
+  const payload = await apiFetch("/api/credits/packages");
+  state.packages = payload.packages || [];
+  renderPackages(state.packages);
+}
+
+async function restoreSession() {
+  updateAuthUi();
+  if (!state.token) {
+    return;
+  }
+
+  try {
+    const payload = await apiFetch("/api/auth/me");
+    updateClient(payload.client);
+  } catch {
+    clearSession();
+  }
 }
 
 function resetResult() {
@@ -21,9 +160,110 @@ function resetResult() {
   openLink.setAttribute("href", "#");
 }
 
+registerForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const formData = new FormData(registerForm);
+
+  try {
+    const payload = await apiFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+      }),
+    });
+    setSession(payload.token, payload.client);
+    registerForm.reset();
+    setStatus("Account created. Buy credits to start generating.");
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Registration failed.", true);
+  }
+});
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const formData = new FormData(loginForm);
+
+  try {
+    const payload = await apiFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: formData.get("email"),
+        password: formData.get("password"),
+      }),
+    });
+    setSession(payload.token, payload.client);
+    loginForm.reset();
+    setStatus("Logged in. Your credits are ready to use.");
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Login failed.", true);
+  }
+});
+
+logoutButton.addEventListener("click", async () => {
+  try {
+    await apiFetch("/api/auth/logout", { method: "POST" });
+  } catch {
+    // Local logout should still work if the server session already expired.
+  }
+  clearSession();
+  setStatus("Logged out.");
+});
+
+packageSelect.addEventListener("change", updatePackageDetails);
+
+purchaseForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (!state.token) {
+    setStatus("Please log in before buying credits.", true);
+    document.getElementById("account").scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const formData = new FormData(purchaseForm);
+  purchaseButton.disabled = true;
+  purchaseButton.textContent = "Processing card...";
+
+  try {
+    const payload = await apiFetch("/api/credits/purchase", {
+      method: "POST",
+      body: JSON.stringify({
+        packageId: formData.get("packageId"),
+        card: {
+          cardholderName: formData.get("cardholderName"),
+          cardNumber: formData.get("cardNumber"),
+          expiry: formData.get("expiry"),
+          cvc: formData.get("cvc"),
+          postalCode: formData.get("postalCode"),
+        },
+      }),
+    });
+
+    updateClient(payload.client);
+    purchaseForm.reset();
+    renderPackages(state.packages);
+    setStatus(
+      `Purchased ${payload.transaction.credits} credits with ${payload.transaction.cardBrand} ending in ${payload.transaction.cardLast4}.`,
+    );
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Credit purchase failed.", true);
+  } finally {
+    purchaseButton.disabled = false;
+    purchaseButton.textContent = "Buy credits";
+  }
+});
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   resetResult();
+
+  if (!state.token) {
+    setStatus("Please log in and buy credits before generating a video.", true);
+    document.getElementById("account").scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
 
   const formData = new FormData(form);
   const prompt = String(formData.get("prompt") || "").trim();
@@ -37,15 +277,12 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  generateButton.disabled = true;
+  setGenerating(true);
   setStatus("Submitting request... video generation can take a while.");
 
   try {
-    const response = await fetch("/api/videos/generate", {
+    const payload = await apiFetch("/api/videos/generate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         prompt,
         duration,
@@ -55,16 +292,17 @@ form.addEventListener("submit", async (event) => {
       }),
     });
 
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload?.error || "Generation request failed.");
-    }
-
     if (!payload.videoUrl || !payload.downloadUrl) {
       throw new Error("Generation finished but video URLs were missing.");
     }
 
     setStatus("Video generated successfully.");
+    if (Number.isFinite(payload.creditsRemaining)) {
+      updateClient({
+        ...state.client,
+        credits: payload.creditsRemaining,
+      });
+    }
     taskIdText.textContent = payload.taskId ? `Task ID: ${payload.taskId}` : "";
     resultCard.classList.remove("hidden");
 
@@ -77,6 +315,13 @@ form.addEventListener("submit", async (event) => {
     const message = error instanceof Error ? error.message : "Unexpected generation error.";
     setStatus(message, true);
   } finally {
-    generateButton.disabled = false;
+    setGenerating(false);
   }
 });
+
+restoreSession()
+  .then(loadPackages)
+  .catch((error) => {
+    console.error(error);
+    setStatus(error instanceof Error ? error.message : "Unable to initialize account features.", true);
+  });

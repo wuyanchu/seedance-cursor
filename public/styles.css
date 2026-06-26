@@ -327,12 +327,33 @@ button:hover:not(:disabled),
   color: var(--violet);
 }
 
+.button-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  margin-right: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.42);
+  border-top-color: white;
+  border-radius: 999px;
+  animation: spin 800ms linear infinite;
+}
+
+button.is-loading .button-spinner {
+  display: inline-block;
+}
+
 button:disabled,
 .secondary-btn:disabled {
   cursor: wait;
   filter: grayscale(0.25);
   opacity: 0.66;
   transform: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .stat-strip {
@@ -401,9 +422,26 @@ button:disabled,
   max-width: 720px;
 }
 
+.section-heading.compact {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-heading.compact h2 {
+  font-size: clamp(1.45rem, 2.3vw, 2.1rem);
+}
+
 .generator-shell,
 .inspiration-section {
   margin-top: 38px;
+}
+
+.account-credit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: 22px;
+  align-items: start;
+  margin: 38px 0;
 }
 
 .creative-grid,
@@ -450,6 +488,73 @@ button:disabled,
     linear-gradient(white, white) padding-box,
     linear-gradient(135deg, var(--pink), var(--sky), var(--yellow)) border-box;
   border: 2px solid transparent;
+}
+
+.account-card,
+.purchase-card {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.88)) padding-box,
+    linear-gradient(135deg, rgba(124, 58, 237, 0.42), rgba(236, 72, 153, 0.32), rgba(6, 182, 212, 0.36))
+      border-box;
+  border: 2px solid transparent;
+}
+
+.credit-pill {
+  display: grid;
+  min-width: 112px;
+  place-items: center;
+  padding: 13px 16px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--violet), var(--pink), var(--orange));
+  box-shadow: 0 16px 34px rgba(236, 72, 153, 0.24);
+  color: white;
+}
+
+.credit-pill span {
+  font-size: 2rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.credit-pill small {
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.purchase-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.package-details {
+  min-height: 74px;
+  margin-bottom: 10px;
+  padding: 14px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(6, 182, 212, 0.1));
+  color: #344054;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.package-details strong {
+  color: var(--violet);
+}
+
+.payment-grid {
+  margin-top: 0;
 }
 
 .preview-card {
@@ -851,6 +956,7 @@ textarea {
 @media (max-width: 980px) {
   .hero,
   .directory-hero,
+  .account-credit-grid,
   .creative-grid,
   .status-result-grid,
   .directory-layout,
@@ -869,6 +975,10 @@ textarea {
   .lawyer-results,
   .image-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .auth-grid {
+    grid-template-columns: 1fr;
   }
 }
 

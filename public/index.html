@@ -21,6 +21,7 @@
           </span>
         </a>
         <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#account">Account</a>
           <a href="#generator">Create</a>
           <a href="#inspiration">Inspiration</a>
         </nav>
@@ -66,6 +67,103 @@
             alt="Misty colorful forest"
           />
         </div>
+      </section>
+
+      <section class="account-credit-grid" id="account">
+        <article class="card account-card">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Client account</p>
+              <h2>Log in and manage credits.</h2>
+            </div>
+            <div class="credit-pill">
+              <span id="credit-balance">0</span>
+              <small>credits</small>
+            </div>
+          </div>
+
+          <p id="auth-status" class="auth-status">Create an account or log in to generate videos.</p>
+
+          <div class="auth-grid">
+            <form id="register-form" class="auth-form">
+              <h3>Create account</h3>
+              <input name="name" type="text" placeholder="Client name" autocomplete="name" required />
+              <input name="email" type="email" placeholder="Email address" autocomplete="email" required />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password (8+ characters)"
+                autocomplete="new-password"
+                required
+              />
+              <button type="submit">Register</button>
+            </form>
+
+            <form id="login-form" class="auth-form">
+              <h3>Log in</h3>
+              <input name="email" type="email" placeholder="Email address" autocomplete="email" required />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+              <button type="submit">Log in</button>
+            </form>
+          </div>
+
+          <button id="logout-button" class="secondary-btn hidden" type="button">Log out</button>
+        </article>
+
+        <article class="card purchase-card">
+          <p class="eyebrow">Buy credits</p>
+          <h2>Pay by credit card.</h2>
+          <p class="muted">
+            Card details are validated for checkout and are not stored by this app. Each generated
+            video uses 1 credit.
+          </p>
+
+          <form id="purchase-form" class="purchase-form">
+            <label for="package-select">Credit package</label>
+            <select id="package-select" name="packageId" required>
+              <option value="">Loading packages...</option>
+            </select>
+
+            <div id="package-details" class="package-details">Select a package to see details.</div>
+
+            <label for="cardholder-name">Name on card</label>
+            <input id="cardholder-name" name="cardholderName" type="text" placeholder="Alex Chen" required />
+
+            <label for="card-number">Credit card number</label>
+            <input
+              id="card-number"
+              name="cardNumber"
+              type="text"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              placeholder="4242 4242 4242 4242"
+              required
+            />
+
+            <div class="grid payment-grid">
+              <label>
+                Expiry
+                <input name="expiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="12/30" required />
+              </label>
+              <label>
+                CVC
+                <input name="cvc" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123" required />
+              </label>
+              <label>
+                Postal code
+                <input name="postalCode" type="text" autocomplete="postal-code" placeholder="10001" required />
+              </label>
+            </div>
+
+            <button id="purchase-button" type="submit">Buy credits</button>
+          </form>
+        </article>
       </section>
 
       <section class="generator-shell" id="generator">
@@ -133,7 +231,10 @@
                 Generate audio
               </label>
 
-              <button id="generate-button" type="submit">Generate video</button>
+              <button id="generate-button" type="submit">
+                <span class="button-spinner" aria-hidden="true"></span>
+                <span class="button-label">Generate video</span>
+              </button>
             </form>
           </section>
 
