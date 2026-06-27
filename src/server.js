@@ -26,7 +26,7 @@ const SEEDANCE_POLL_INTERVAL_MS = Number(process.env.SEEDANCE_POLL_INTERVAL_MS) 
 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
-const GENERATION_CREDIT_COST = 1;
+const GENERATION_CREDIT_COST = 300;
 const CREDIT_PACKAGES = Object.freeze([
   {
     id: "starter",
@@ -643,7 +643,7 @@ app.post("/api/videos/generate", requireAuth, async (req, res) => {
 
   if (Number(req.client.credits || 0) < GENERATION_CREDIT_COST) {
     return res.status(402).json({
-      error: "You need at least 1 credit to generate a video. Please buy credits first.",
+      error: `You need at least ${GENERATION_CREDIT_COST} credits to generate a video. Please buy credits first.`,
     });
   }
 

@@ -11,6 +11,7 @@ const state = {
 const form = document.getElementById("video-form");
 const generateButton = document.getElementById("generate-button");
 const generateButtonLabel = generateButton.querySelector(".button-label");
+const generatorPanel = document.getElementById("generator-panel");
 const promptLoginPanel = document.getElementById("prompt-login-panel");
 const statusText = document.getElementById("status-text");
 const taskIdText = document.getElementById("task-id");
@@ -120,6 +121,20 @@ function revealLoginArea({ scroll = true } = {}) {
   if (scroll) {
     accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+}
+
+function openGeneratorView(targetHash = "#generator") {
+  document.body.classList.add("generator-active");
+  generatorPanel.classList.remove("hidden");
+
+  const target = document.querySelector(targetHash) || document.getElementById("generator");
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeGeneratorView() {
+  document.body.classList.remove("generator-active");
+  generatorPanel.classList.add("hidden");
+  document.getElementById("generator").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function apiFetch(url, options = {}) {
@@ -243,6 +258,20 @@ document.querySelectorAll("[data-open-login]").forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
     revealLoginArea();
+  });
+});
+
+document.querySelectorAll("[data-open-generator]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    openGeneratorView(link.getAttribute("href") || "#generator");
+  });
+});
+
+document.querySelectorAll("[data-close-generator]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    closeGeneratorView();
   });
 });
 

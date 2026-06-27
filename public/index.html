@@ -18,7 +18,7 @@
 
     <div class="promo-bar">
       <span>2026 · Seedance 2.0 Released</span>
-      <a href="#generator">Try Now</a>
+      <a href="#generator" data-open-generator>Try Now</a>
     </div>
 
     <header class="top-nav">
@@ -31,7 +31,7 @@
           </span>
         </a>
         <nav class="nav-links" aria-label="Primary navigation">
-          <a href="#generator">Generator</a>
+          <a href="#generator" data-open-generator>Generator</a>
           <a href="#templates">Templates</a>
           <a href="#what-is">What is it?</a>
           <a href="#creators">Creators</a>
@@ -52,8 +52,8 @@
             storytelling. No filming. No editing software. Just describe what you want.
           </p>
           <div class="hero-actions">
-            <a class="button-link" href="#generator">Start Creating Free</a>
-            <a class="button-link secondary" href="#showcase-videos">Browse Examples</a>
+            <a class="button-link" href="#generator" data-open-generator>Start generating</a>
+            <a class="button-link secondary" href="#showcase-videos" data-open-generator>Browse Examples</a>
           </div>
           <div class="stat-strip" aria-label="Generation highlights">
             <span><strong>1080p</strong> video output</span>
@@ -74,7 +74,8 @@
           </div>
         </div>
 
-        <div class="hero-generator-card">
+        <div class="hero-generator-card hidden" id="generator-panel">
+          <a class="button-link secondary generator-back-link" href="#top" data-close-generator>Back to homepage</a>
           <div class="generator-tabs" aria-label="Generation modes">
             <span>Video</span>
             <span>Watermark Tools</span>
@@ -152,6 +153,11 @@
               <input type="checkbox" name="generateAudio" checked />
               Generate audio
             </label>
+
+            <div class="generation-credit-note">
+              <strong>300 credits</strong>
+              <span>required to generate a video</span>
+            </div>
 
             <button id="generate-button" type="submit">
               <span class="button-spinner" aria-hidden="true"></span>
@@ -444,7 +450,7 @@
           <h2>Pay by credit card.</h2>
           <p class="muted">
             Card details are validated for checkout and are not stored by this app. Each generated
-            video uses 1 credit.
+            video uses 300 credits.
           </p>
 
           <form id="purchase-form" class="purchase-form">
@@ -658,8 +664,8 @@
         <p class="eyebrow">Start Creating with Seedance 2.0</p>
         <h2>Professional video from a text prompt. Free to start, no editing software needed.</h2>
         <div class="hero-actions">
-          <a class="button-link" href="#generator">Start Creating Free</a>
-          <a class="button-link secondary" href="#showcase-videos">Browse Examples</a>
+          <a class="button-link" href="#generator" data-open-generator>Start generating</a>
+          <a class="button-link secondary" href="#showcase-videos" data-open-generator>Browse Examples</a>
         </div>
       </section>
     </main>

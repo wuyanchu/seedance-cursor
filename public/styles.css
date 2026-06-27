@@ -523,6 +523,30 @@ button:disabled,
   gap: 4px;
 }
 
+.generator-back-link {
+  justify-self: start;
+  width: auto;
+}
+
+.generation-credit-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 2px 0 12px;
+  padding: 13px 15px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(236, 72, 153, 0.1));
+  color: #475467;
+  font-weight: 850;
+}
+
+.generation-credit-note strong {
+  color: var(--violet);
+  font-size: 1.25rem;
+}
+
 .prompt-login-panel {
   display: grid;
   gap: 12px;
@@ -592,6 +616,23 @@ button:disabled,
 
 .section-heading.centered h2 {
   max-width: 860px;
+}
+
+body.generator-active .page > section:not(#generator):not(#account) {
+  display: none;
+}
+
+body.generator-active .video-hero {
+  grid-template-columns: 1fr;
+}
+
+body.generator-active .hero-content {
+  display: none;
+}
+
+body.generator-active .hero-generator-card {
+  width: min(100%, 980px);
+  margin: 0 auto;
 }
 
 .section-subtitle {
