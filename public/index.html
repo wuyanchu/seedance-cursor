@@ -368,20 +368,20 @@
               <h3>Premium</h3>
               <p><strong>37,500</strong> Credits</p>
               <span>$99.99</span>
-              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
+              <a class="button-link secondary" href="#account" data-buy-credits>Buy Now</a>
             </article>
             <article class="featured-pack">
               <span class="plan-badge">Best Value</span>
               <h3>Growth</h3>
               <p><strong>13,800</strong> Credits</p>
               <span>$36.99</span>
-              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
+              <a class="button-link secondary" href="#account" data-buy-credits>Buy Now</a>
             </article>
             <article>
               <h3>Starter</h3>
               <p><strong>7,500</strong> Credits</p>
               <span>$19.99</span>
-              <a class="button-link secondary" href="#account" data-open-login>Buy Now</a>
+              <a class="button-link secondary" href="#account" data-buy-credits>Buy Now</a>
             </article>
           </div>
         </div>
@@ -400,6 +400,7 @@
 
       <section class="account-credit-grid hidden" id="account">
         <article class="card account-card">
+          <a class="button-link secondary generator-back-link" href="#pricing" data-close-account-flow>Back</a>
           <div class="section-heading compact">
             <div>
               <p class="eyebrow">Client account</p>
@@ -446,6 +447,7 @@
         </article>
 
         <article class="card purchase-card hidden" id="purchase-card">
+          <a class="button-link secondary generator-back-link" href="#pricing" data-close-account-flow>Back</a>
           <p class="eyebrow">Buy credits</p>
           <h2>Pay by credit card.</h2>
           <p class="muted">
@@ -677,7 +679,7 @@
         <p id="credit-modal-message">Insufficient credit, you need 300 credit to generate but only have 100.</p>
         <div class="actions">
           <button id="credit-modal-close" type="button" class="secondary-btn">Close</button>
-          <a class="button-link" href="#pricing" id="credit-modal-buy">Buy credits</a>
+          <a class="button-link" href="#account" id="credit-modal-buy" data-buy-credits>Buy credits</a>
         </div>
       </div>
     </div>

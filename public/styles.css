@@ -636,6 +636,11 @@ body.generator-active .page > section:not(#generator):not(#account) {
   display: none;
 }
 
+body.account-flow-active .page > section:not(#account),
+body.checkout-flow-active .page > section:not(#account) {
+  display: none;
+}
+
 body.generator-active .video-hero {
   grid-template-columns: 1fr;
 }
@@ -647,6 +652,17 @@ body.generator-active .hero-content {
 body.generator-active .hero-generator-card {
   width: min(100%, 980px);
   margin: 0 auto;
+}
+
+body.account-flow-active .account-credit-grid,
+body.checkout-flow-active .account-credit-grid {
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}
+
+body.account-flow-active .purchase-card,
+body.checkout-flow-active .account-card {
+  display: none;
 }
 
 .section-subtitle {

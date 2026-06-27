@@ -8,6 +8,7 @@ const state = {
   client: null,
   packages: [],
   loginRequested: false,
+  creditFlowRequested: false,
 };
 
 const form = document.getElementById("video-form");
@@ -117,13 +118,13 @@ function updateAuthUi() {
   if (state.client) {
     authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
     creditBalance.textContent = String(state.client.credits || 0);
-    accountSection.classList.remove("hidden");
+    accountSection.classList.toggle("hidden", !state.loginRequested && !state.creditFlowRequested);
     promptLoginPanel.classList.add("hidden");
     form.classList.remove("hidden");
     logoutButton.classList.remove("hidden");
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
-    purchaseCard.classList.remove("hidden");
+    purchaseCard.classList.toggle("hidden", !state.creditFlowRequested);
   } else {
     authStatus.textContent = "Create an account or log in to generate videos.";
     creditBalance.textContent = "0";
@@ -137,15 +138,57 @@ function updateAuthUi() {
   }
 }
 
+function clearStandaloneModes() {
+  document.body.classList.remove("generator-active", "account-flow-active", "checkout-flow-active");
+}
+
 function revealLoginArea({ scroll = true } = {}) {
   state.loginRequested = true;
+  state.creditFlowRequested = false;
+  clearStandaloneModes();
+  document.body.classList.add("account-flow-active");
   updateAuthUi();
   if (scroll) {
     accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
+function openPaymentView({ scroll = true } = {}) {
+  state.loginRequested = true;
+  state.creditFlowRequested = true;
+  clearStandaloneModes();
+  document.body.classList.add("checkout-flow-active");
+  updateAuthUi();
+  if (scroll) {
+    purchaseCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function openCreditFlow() {
+  hideCreditModal();
+  if (state.client) {
+    openPaymentView();
+    return;
+  }
+
+  state.loginRequested = true;
+  state.creditFlowRequested = true;
+  clearStandaloneModes();
+  document.body.classList.add("account-flow-active");
+  updateAuthUi();
+  accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeAccountFlow() {
+  state.loginRequested = false;
+  state.creditFlowRequested = false;
+  clearStandaloneModes();
+  updateAuthUi();
+  document.getElementById("pricing").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function openGeneratorView(targetHash = "#generator") {
+  clearStandaloneModes();
   document.body.classList.add("generator-active");
   generatorPanel.classList.remove("hidden");
 
@@ -250,7 +293,10 @@ registerForm.addEventListener("submit", async (event) => {
     });
     setSession(payload.token, payload.client);
     registerForm.reset();
-    setStatus("Account created. Buy credits to start generating.");
+    setStatus("Account created. Continue to buy credits.");
+    if (state.creditFlowRequested) {
+      openPaymentView();
+    }
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "Registration failed.", true);
   }
@@ -271,6 +317,9 @@ loginForm.addEventListener("submit", async (event) => {
     setSession(payload.token, payload.client);
     loginForm.reset();
     setStatus("Logged in. Your credits are ready to use.");
+    if (state.creditFlowRequested) {
+      openPaymentView();
+    }
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "Login failed.", true);
   }
@@ -291,8 +340,18 @@ creditModal.addEventListener("click", (event) => {
   }
 });
 
-creditModalBuy.addEventListener("click", () => {
-  hideCreditModal();
+document.querySelectorAll("[data-buy-credits]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    openCreditFlow();
+  });
+});
+
+document.querySelectorAll("[data-close-account-flow]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    closeAccountFlow();
+  });
 });
 
 document.querySelectorAll("[data-open-generator]").forEach((link) => {
@@ -317,6 +376,7 @@ logoutButton.addEventListener("click", async () => {
   }
   clearSession();
   state.loginRequested = false;
+  state.creditFlowRequested = false;
   updateAuthUi();
   setStatus("Logged out.");
 });
