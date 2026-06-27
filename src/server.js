@@ -183,7 +183,30 @@ async function requireAuth(req, res, next) {
   }
 
   req.authToken = token;
-  req.client = client;
+  req.authClient = client;
+  return next();
+}
+
+async function optionalAuth(req, _res, next) {
+  const token = getBearerToken(req);
+  if (!token) {
+    return next();
+  }
+
+  const session = sessions.get(token);
+  if (!session) {
+    return next();
+  }
+
+  const clients = await readJson(clientsFile, []);
+  const client = clients.find((entry) => entry.id === session.clientId);
+  if (!client) {
+    sessions.delete(token);
+    return next();
+  }
+
+  req.authToken = token;
+  req.authClient = client;
   return next();
 }
 
@@ -490,7 +513,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
-  return res.json({ client: safeClient(req.client) });
+  return res.json({ client: safeClient(req.authClient) });
 });
 
 app.post("/api/auth/register", async (req, res) => {
@@ -579,7 +602,7 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
   }
 
   const clients = await readJson(clientsFile, []);
-  const clientIndex = clients.findIndex((client) => client.id === req.client.id);
+  const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
   if (clientIndex === -1) {
     sessions.delete(req.authToken);
     return res.status(401).json({ error: "Account not found. Please log in again." });
@@ -590,7 +613,7 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
 
   const transaction = {
     id: crypto.randomUUID(),
-    clientId: req.client.id,
+    clientId: req.authClient.id,
     packageId: selectedPackage.id,
     packageName: selectedPackage.name,
     credits: selectedPackage.credits,
@@ -622,7 +645,7 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
   });
 });
 
-app.post("/api/videos/generate", requireAuth, async (req, res) => {
+app.post("/api/videos/generate", optionalAuth, async (req, res) => {
   const prompt = String(req.body?.prompt || "").trim();
   const resolution = String(req.body?.resolution || "720p").trim();
   const aspectRatio = String(req.body?.aspectRatio || "16:9").trim();
@@ -641,12 +664,6 @@ app.post("/api/videos/generate", requireAuth, async (req, res) => {
     return res.status(400).json({ error: "Duration must be an integer between 4 and 15 seconds." });
   }
 
-  if (Number(req.client.credits || 0) < GENERATION_CREDIT_COST) {
-    return res.status(402).json({
-      error: `You need at least ${GENERATION_CREDIT_COST} credits to generate a video. Please buy credits first.`,
-    });
-  }
-
   if (!SEEDANCE_API_KEY) {
     const taskId = `demo-${crypto.randomUUID()}`;
     const videoUrl = selectDemoVideoUrl(prompt);
@@ -656,7 +673,7 @@ app.post("/api/videos/generate", requireAuth, async (req, res) => {
       taskId,
       videoUrl,
       downloadUrl: `/api/videos/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename)}`,
-      creditsRemaining: Number(req.client.credits || 0),
+      creditsRemaining: req.authClient ? Number(req.authClient.credits || 0) : null,
       demo: true,
       notice:
         "Demo video returned because the server is missing SEEDANCE_API_KEY. Add the key to enable real Seedance generation.",
@@ -674,26 +691,25 @@ app.post("/api/videos/generate", requireAuth, async (req, res) => {
 
     const { videoUrl } = await waitForTaskCompletion(taskId);
     const safeFilename = `${taskId}.mp4`;
-    const clients = await readJson(clientsFile, []);
-    const clientIndex = clients.findIndex((client) => client.id === req.client.id);
-    if (clientIndex === -1) {
-      sessions.delete(req.authToken);
-      return res.status(401).json({ error: "Account not found. Please log in again." });
-    }
-    if (Number(clients[clientIndex].credits || 0) < GENERATION_CREDIT_COST) {
-      return res.status(402).json({
-        error: "Your credit balance changed. Please buy credits before generating again.",
-      });
-    }
+    let creditsRemaining = null;
 
-    clients[clientIndex].credits = Number(clients[clientIndex].credits || 0) - GENERATION_CREDIT_COST;
-    await writeJson(clientsFile, clients);
+    if (req.authClient) {
+      const clients = await readJson(clientsFile, []);
+      const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
+      if (clientIndex !== -1 && Number(clients[clientIndex].credits || 0) >= GENERATION_CREDIT_COST) {
+        clients[clientIndex].credits = Number(clients[clientIndex].credits || 0) - GENERATION_CREDIT_COST;
+        await writeJson(clientsFile, clients);
+        creditsRemaining = Number(clients[clientIndex].credits || 0);
+      } else if (clientIndex !== -1) {
+        creditsRemaining = Number(clients[clientIndex].credits || 0);
+      }
+    }
 
     return res.status(201).json({
       taskId,
       videoUrl,
       downloadUrl: `/api/videos/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename)}`,
-      creditsRemaining: Number(clients[clientIndex].credits || 0),
+      creditsRemaining,
     });
   } catch (error) {
     console.error("Seedance generation error:", error);

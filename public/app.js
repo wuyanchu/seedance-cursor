@@ -106,8 +106,8 @@ function updateAuthUi() {
     authStatus.textContent = "Create an account or log in to generate videos.";
     creditBalance.textContent = "0";
     accountSection.classList.toggle("hidden", !state.loginRequested);
-    promptLoginPanel.classList.remove("hidden");
-    form.classList.add("hidden");
+    promptLoginPanel.classList.add("hidden");
+    form.classList.remove("hidden");
     logoutButton.classList.add("hidden");
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
@@ -126,10 +126,6 @@ function revealLoginArea({ scroll = true } = {}) {
 function openGeneratorView(targetHash = "#generator") {
   document.body.classList.add("generator-active");
   generatorPanel.classList.remove("hidden");
-
-  if (!state.client) {
-    revealLoginArea({ scroll: false });
-  }
 
   const target = document.querySelector(targetHash) || document.getElementById("generator");
   target.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -338,12 +334,6 @@ purchaseForm.addEventListener("submit", async (event) => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   resetResult();
-
-  if (!state.token) {
-    setStatus("Please log in and buy credits before generating a video.", true);
-    revealLoginArea();
-    return;
-  }
 
   const formData = new FormData(form);
   const prompt = String(formData.get("prompt") || "").trim();
