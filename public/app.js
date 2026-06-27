@@ -1,5 +1,7 @@
 const TOKEN_KEY = "seedance_client_token";
 const CLIENT_KEY = "seedance_client";
+const GENERATION_CREDIT_COST = 300;
+const DEFAULT_GUEST_CREDITS = 100;
 
 const state = {
   token: localStorage.getItem(TOKEN_KEY) || "",
@@ -30,6 +32,10 @@ const purchaseForm = document.getElementById("purchase-form");
 const packageSelect = document.getElementById("package-select");
 const packageDetails = document.getElementById("package-details");
 const purchaseButton = document.getElementById("purchase-button");
+const creditModal = document.getElementById("credit-modal");
+const creditModalMessage = document.getElementById("credit-modal-message");
+const creditModalClose = document.getElementById("credit-modal-close");
+const creditModalBuy = document.getElementById("credit-modal-buy");
 
 const cachedClientRaw = localStorage.getItem(CLIENT_KEY);
 if (cachedClientRaw) {
@@ -72,6 +78,22 @@ function setGenerating(isGenerating) {
   generateButton.classList.toggle("is-loading", isGenerating);
   generateButton.setAttribute("aria-busy", String(isGenerating));
   generateButtonLabel.textContent = isGenerating ? "Generating video..." : "Generate video";
+}
+
+function getAvailableCredits() {
+  if (state.client) {
+    return Number(state.client.credits || 0);
+  }
+  return DEFAULT_GUEST_CREDITS;
+}
+
+function showCreditModal(availableCredits) {
+  creditModalMessage.textContent = `Insufficient credit, you need ${GENERATION_CREDIT_COST} credit to generate but only have ${availableCredits}.`;
+  creditModal.classList.remove("hidden");
+}
+
+function hideCreditModal() {
+  creditModal.classList.add("hidden");
 }
 
 function tryPlayVideo(video) {
@@ -261,6 +283,18 @@ document.querySelectorAll("[data-open-login]").forEach((link) => {
   });
 });
 
+creditModalClose.addEventListener("click", hideCreditModal);
+
+creditModal.addEventListener("click", (event) => {
+  if (event.target === creditModal) {
+    hideCreditModal();
+  }
+});
+
+creditModalBuy.addEventListener("click", () => {
+  hideCreditModal();
+});
+
 document.querySelectorAll("[data-open-generator]").forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
@@ -344,6 +378,12 @@ form.addEventListener("submit", async (event) => {
 
   if (prompt.length < 3) {
     setStatus("Please provide a longer prompt (at least 3 characters).", true);
+    return;
+  }
+
+  const availableCredits = getAvailableCredits();
+  if (availableCredits < GENERATION_CREDIT_COST) {
+    showCreditModal(availableCredits);
     return;
   }
 

@@ -1406,6 +1406,38 @@ textarea {
   color: var(--violet);
 }
 
+.message-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.message-modal-card {
+  width: min(100%, 480px);
+  padding: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(236, 72, 153, 0.14), transparent 16rem),
+    rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.message-modal-card h2 {
+  margin: 0;
+}
+
+.message-modal-card p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
 .image-gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

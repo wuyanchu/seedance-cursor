@@ -670,6 +670,18 @@
       </section>
     </main>
 
+    <div class="message-modal hidden" id="credit-modal" role="dialog" aria-modal="true" aria-labelledby="credit-modal-title">
+      <div class="message-modal-card">
+        <p class="eyebrow">Insufficient credit</p>
+        <h2 id="credit-modal-title">Not enough credits</h2>
+        <p id="credit-modal-message">Insufficient credit, you need 300 credit to generate but only have 100.</p>
+        <div class="actions">
+          <button id="credit-modal-close" type="button" class="secondary-btn">Close</button>
+          <a class="button-link" href="#pricing" id="credit-modal-buy">Buy credits</a>
+        </div>
+      </div>
+    </div>
+
     <script src="/app.js" defer></script>
   </body>
 </html>
