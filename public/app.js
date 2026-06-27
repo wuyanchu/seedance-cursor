@@ -36,7 +36,8 @@ const purchaseButton = document.getElementById("purchase-button");
 const creditModal = document.getElementById("credit-modal");
 const creditModalMessage = document.getElementById("credit-modal-message");
 const creditModalClose = document.getElementById("credit-modal-close");
-const creditModalBuy = document.getElementById("credit-modal-buy");
+const paypalStatus = document.getElementById("paypal-status");
+const paypalButtons = document.getElementById("paypal-buttons");
 
 const cachedClientRaw = localStorage.getItem(CLIENT_KEY);
 if (cachedClientRaw) {
@@ -248,10 +249,96 @@ function updatePackageDetails() {
   packageDetails.innerHTML = `<strong>${selectedPackage.credits} credits</strong> for ${selectedPackage.priceLabel}. ${selectedPackage.description}`;
 }
 
+function selectedPackageId() {
+  return String(packageSelect.value || "").trim();
+}
+
 async function loadPackages() {
   const payload = await apiFetch("/api/credits/packages");
   state.packages = payload.packages || [];
   renderPackages(state.packages);
+}
+
+function setPayPalStatus(message, isError = false) {
+  paypalStatus.textContent = message;
+  paypalStatus.style.color = isError ? "#be123c" : "#667085";
+}
+
+function loadPayPalSdk(clientId, currency) {
+  if (window.paypal?.Buttons) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(
+      currency,
+    )}&intent=capture`;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Unable to load PayPal checkout."));
+    document.head.appendChild(script);
+  });
+}
+
+async function initPayPalCheckout() {
+  if (!paypalButtons || !paypalStatus) {
+    return;
+  }
+
+  try {
+    const config = await apiFetch("/api/paypal/config");
+    if (!config.configured || !config.clientId) {
+      setPayPalStatus("PayPal is not configured yet. Add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET on the server.", true);
+      return;
+    }
+
+    await loadPayPalSdk(config.clientId, config.currency || "USD");
+    setPayPalStatus("Choose a package, then complete payment with PayPal.");
+    paypalButtons.innerHTML = "";
+
+    window.paypal
+      .Buttons({
+        style: {
+          layout: "vertical",
+          shape: "pill",
+          label: "paypal",
+        },
+        createOrder: async () => {
+          const packageId = selectedPackageId();
+          if (!packageId) {
+            throw new Error("Please select a credit package first.");
+          }
+          setPayPalStatus("Creating PayPal order...");
+          const payload = await apiFetch("/api/paypal/orders", {
+            method: "POST",
+            body: JSON.stringify({ packageId }),
+          });
+          return payload.id;
+        },
+        onApprove: async (data) => {
+          setPayPalStatus("Capturing PayPal payment...");
+          const payload = await apiFetch(`/api/paypal/orders/${encodeURIComponent(data.orderID)}/capture`, {
+            method: "POST",
+            body: JSON.stringify({ packageId: selectedPackageId() }),
+          });
+          updateClient(payload.client);
+          setPayPalStatus(`PayPal payment complete. Added ${payload.transaction.credits} credits.`);
+          setStatus(`Purchased ${payload.transaction.credits} credits with PayPal.`);
+        },
+        onCancel: () => {
+          setPayPalStatus("PayPal payment was cancelled.");
+        },
+        onError: (error) => {
+          const message = error instanceof Error ? error.message : "PayPal payment failed.";
+          setPayPalStatus(message, true);
+        },
+      })
+      .render("#paypal-buttons");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to initialize PayPal checkout.";
+    setPayPalStatus(message, true);
+  }
 }
 
 async function restoreSession() {
@@ -494,6 +581,7 @@ form.addEventListener("submit", async (event) => {
 
 restoreSession()
   .then(loadPackages)
+  .then(initPayPalCheckout)
   .then(initAutoplayVideos)
   .catch((error) => {
     console.error(error);

@@ -812,6 +812,24 @@ body.checkout-flow-active .account-card {
   margin-top: 0;
 }
 
+.paypal-checkout-card {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.paypal-checkout-card h3 {
+  margin: 0;
+}
+
+#paypal-buttons {
+  min-height: 46px;
+}
+
 .preview-card {
   overflow: hidden;
   background: #111827;

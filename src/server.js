@@ -23,6 +23,15 @@ const SEEDANCE_BASE_URL = String(process.env.SEEDANCE_BASE_URL || "https://ark.c
 const SEEDANCE_MODEL = String(process.env.SEEDANCE_MODEL || "doubao-seedance-2-0-fast-260128").trim();
 const SEEDANCE_TIMEOUT_MS = Number(process.env.SEEDANCE_TIMEOUT_MS) || 5 * 60 * 1000;
 const SEEDANCE_POLL_INTERVAL_MS = Number(process.env.SEEDANCE_POLL_INTERVAL_MS) || 3000;
+const PAYPAL_CLIENT_ID = String(process.env.PAYPAL_CLIENT_ID || "").trim();
+const PAYPAL_CLIENT_SECRET = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
+const PAYPAL_ENV = String(process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase();
+const PAYPAL_API_BASE_URL = String(
+  process.env.PAYPAL_API_BASE_URL ||
+    (PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"),
+)
+  .trim()
+  .replace(/\/+$/, "");
 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
@@ -317,6 +326,60 @@ function findCreditPackage(packageId) {
   return CREDIT_PACKAGES.find((entry) => entry.id === packageId);
 }
 
+function isPayPalConfigured() {
+  return Boolean(PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET);
+}
+
+function amountLabel(amountCents) {
+  return (amountCents / 100).toFixed(2);
+}
+
+async function getPayPalAccessToken() {
+  const response = await fetch(`${PAYPAL_API_BASE_URL}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64")}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ grant_type: "client_credentials" }),
+  });
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok || !payload.access_token) {
+    throw new Error(payload.error_description || payload.error || "Unable to authenticate with PayPal.");
+  }
+
+  return payload.access_token;
+}
+
+async function callPayPalApi(endpoint, { method = "GET", body } = {}) {
+  if (!isPayPalConfigured()) {
+    throw new Error("PayPal is not configured on this server.");
+  }
+
+  const accessToken = await getPayPalAccessToken();
+  const response = await fetch(`${PAYPAL_API_BASE_URL}${endpoint}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = payload.message || payload.error_description || payload.name || "PayPal request failed.";
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+function extractPayPalCapture(orderPayload) {
+  return orderPayload?.purchase_units?.[0]?.payments?.captures?.[0] || null;
+}
+
 function selectDemoVideoUrl(prompt) {
   const seed = Array.from(String(prompt || "")).reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return DEMO_VIDEO_URLS[seed % DEMO_VIDEO_URLS.length];
@@ -585,6 +648,15 @@ app.get("/api/credits/packages", (_req, res) => {
   return res.json({ packages: CREDIT_PACKAGES.map(serializeCreditPackage) });
 });
 
+app.get("/api/paypal/config", (_req, res) => {
+  return res.json({
+    configured: isPayPalConfigured(),
+    clientId: isPayPalConfigured() ? PAYPAL_CLIENT_ID : "",
+    currency: "USD",
+    environment: PAYPAL_ENV === "live" ? "live" : "sandbox",
+  });
+});
+
 app.post("/api/credits/purchase", requireAuth, async (req, res) => {
   const packageId = String(req.body?.packageId || "").trim();
   const selectedPackage = findCreditPackage(packageId);
@@ -643,6 +715,138 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
       createdAt: transaction.createdAt,
     },
   });
+});
+
+app.post("/api/paypal/orders", requireAuth, async (req, res) => {
+  if (!isPayPalConfigured()) {
+    return res.status(503).json({ error: "PayPal is not configured on this server." });
+  }
+
+  const packageId = String(req.body?.packageId || "").trim();
+  const selectedPackage = findCreditPackage(packageId);
+  if (!selectedPackage) {
+    return res.status(400).json({ error: "Please select a valid credit package." });
+  }
+
+  try {
+    const order = await callPayPalApi("/v2/checkout/orders", {
+      method: "POST",
+      body: {
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: selectedPackage.id,
+            custom_id: `${req.authClient.id}:${selectedPackage.id}`,
+            description: `${selectedPackage.name} - ${selectedPackage.credits} credits`,
+            amount: {
+              currency_code: selectedPackage.currency,
+              value: amountLabel(selectedPackage.amountCents),
+            },
+          },
+        ],
+        application_context: {
+          shipping_preference: "NO_SHIPPING",
+          user_action: "PAY_NOW",
+        },
+      },
+    });
+
+    return res.status(201).json({ id: order.id });
+  } catch (error) {
+    console.error("PayPal order create error:", error);
+    return res.status(502).json({
+      error: error instanceof Error ? error.message : "Unable to create PayPal order.",
+    });
+  }
+});
+
+app.post("/api/paypal/orders/:orderId/capture", requireAuth, async (req, res) => {
+  if (!isPayPalConfigured()) {
+    return res.status(503).json({ error: "PayPal is not configured on this server." });
+  }
+
+  const orderId = String(req.params.orderId || "").trim();
+  if (!orderId) {
+    return res.status(400).json({ error: "Missing PayPal order ID." });
+  }
+
+  try {
+    const existingTransactions = await readJson(creditTransactionsFile, []);
+    const existingTransaction = existingTransactions.find(
+      (transaction) => transaction.provider === "paypal" && transaction.paypalOrderId === orderId,
+    );
+    if (existingTransaction) {
+      const clients = await readJson(clientsFile, []);
+      const client = clients.find((entry) => entry.id === req.authClient.id);
+      return res.json({
+        client: safeClient(client || req.authClient),
+        transaction: existingTransaction,
+      });
+    }
+
+    const capturedOrder = await callPayPalApi(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
+      method: "POST",
+    });
+    const capture = extractPayPalCapture(capturedOrder);
+    const packageId = String(capturedOrder?.purchase_units?.[0]?.reference_id || req.body?.packageId || "").trim();
+    const selectedPackage = findCreditPackage(packageId);
+
+    if (!selectedPackage) {
+      return res.status(400).json({ error: "PayPal order did not include a valid credit package." });
+    }
+    if (capturedOrder.status !== "COMPLETED" && capture?.status !== "COMPLETED") {
+      return res.status(402).json({ error: "PayPal payment was not completed." });
+    }
+
+    const paidCurrency = capture?.amount?.currency_code || capturedOrder?.purchase_units?.[0]?.amount?.currency_code;
+    const paidCents = Math.round(Number(capture?.amount?.value || 0) * 100);
+    if (paidCurrency !== selectedPackage.currency || paidCents !== selectedPackage.amountCents) {
+      return res.status(400).json({ error: "PayPal payment amount did not match the selected package." });
+    }
+
+    const clients = await readJson(clientsFile, []);
+    const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
+    if (clientIndex === -1) {
+      sessions.delete(req.authToken);
+      return res.status(401).json({ error: "Account not found. Please log in again." });
+    }
+
+    clients[clientIndex].credits = Number(clients[clientIndex].credits || 0) + selectedPackage.credits;
+    await writeJson(clientsFile, clients);
+
+    const transaction = {
+      id: crypto.randomUUID(),
+      provider: "paypal",
+      clientId: req.authClient.id,
+      packageId: selectedPackage.id,
+      packageName: selectedPackage.name,
+      credits: selectedPackage.credits,
+      amountCents: selectedPackage.amountCents,
+      currency: selectedPackage.currency,
+      paypalOrderId: orderId,
+      paypalCaptureId: capture?.id || "",
+      payerEmail: capturedOrder?.payer?.email_address || "",
+      status: "succeeded",
+      createdAt: new Date().toISOString(),
+    };
+
+    const transactions = await readJson(creditTransactionsFile, []);
+    transactions.push(transaction);
+    await writeJson(creditTransactionsFile, transactions);
+
+    return res.status(201).json({
+      client: safeClient(clients[clientIndex]),
+      transaction: {
+        ...transaction,
+        priceLabel: toCurrency(transaction.amountCents, transaction.currency),
+      },
+    });
+  } catch (error) {
+    console.error("PayPal order capture error:", error);
+    return res.status(502).json({
+      error: error instanceof Error ? error.message : "Unable to capture PayPal payment.",
+    });
+  }
 });
 
 app.post("/api/videos/generate", optionalAuth, async (req, res) => {
