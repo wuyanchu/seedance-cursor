@@ -127,6 +127,10 @@ function openGeneratorView(targetHash = "#generator") {
   document.body.classList.add("generator-active");
   generatorPanel.classList.remove("hidden");
 
+  if (!state.client) {
+    revealLoginArea({ scroll: false });
+  }
+
   const target = document.querySelector(targetHash) || document.getElementById("generator");
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
