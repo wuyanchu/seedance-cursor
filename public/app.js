@@ -59,6 +59,11 @@ function getClientDisplayName(client) {
   return String(client.email || "").trim();
 }
 
+function setAuthStatus(message, isError = false) {
+  authStatus.textContent = message;
+  authStatus.classList.toggle("is-error", isError);
+}
+
 function updateClient(client) {
   state.client = client;
   if (client) {
@@ -128,7 +133,7 @@ function initAutoplayVideos() {
 
 function updateAuthUi() {
   if (state.client) {
-    authStatus.textContent = `Logged in as ${getClientDisplayName(state.client)}.`;
+    setAuthStatus(`Logged in as ${getClientDisplayName(state.client)}.`);
     creditBalance.textContent = String(state.client.credits || 0);
     accountSection.classList.toggle("hidden", !state.loginRequested && !state.creditFlowRequested);
     promptLoginPanel.classList.add("hidden");
@@ -138,7 +143,7 @@ function updateAuthUi() {
     loginForm.classList.add("hidden");
     purchaseCard.classList.toggle("hidden", !state.creditFlowRequested);
   } else {
-    authStatus.textContent = "Create an account or log in to generate videos.";
+    setAuthStatus("Create an account or log in to generate videos.");
     creditBalance.textContent = "0";
     accountSection.classList.toggle("hidden", !state.loginRequested);
     promptLoginPanel.classList.add("hidden");
@@ -426,6 +431,7 @@ registerForm.addEventListener("submit", async (event) => {
       openPaymentView();
     }
   } catch (error) {
+    setAuthStatus(error instanceof Error ? error.message : "Registration failed.", true);
     setStatus(error instanceof Error ? error.message : "Registration failed.", true);
   }
 });
@@ -449,6 +455,7 @@ loginForm.addEventListener("submit", async (event) => {
       openPaymentView();
     }
   } catch (error) {
+    setAuthStatus(error instanceof Error ? error.message : "Login failed.", true);
     setStatus(error instanceof Error ? error.message : "Login failed.", true);
   }
 });
