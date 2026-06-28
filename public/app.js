@@ -48,6 +48,17 @@ if (cachedClientRaw) {
   }
 }
 
+function getClientDisplayName(client) {
+  if (!client) {
+    return "";
+  }
+  const name = String(client.name || "").trim();
+  if (name) {
+    return name;
+  }
+  return String(client.email || "").trim();
+}
+
 function updateClient(client) {
   state.client = client;
   if (client) {
@@ -117,7 +128,7 @@ function initAutoplayVideos() {
 
 function updateAuthUi() {
   if (state.client) {
-    authStatus.textContent = `Logged in as ${state.client.name} (${state.client.email}).`;
+    authStatus.textContent = `Logged in as ${getClientDisplayName(state.client)}.`;
     creditBalance.textContent = String(state.client.credits || 0);
     accountSection.classList.toggle("hidden", !state.loginRequested && !state.creditFlowRequested);
     promptLoginPanel.classList.add("hidden");
@@ -404,7 +415,6 @@ registerForm.addEventListener("submit", async (event) => {
     const payload = await apiFetch("/api/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
       }),

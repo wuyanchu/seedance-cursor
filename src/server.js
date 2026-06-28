@@ -126,6 +126,17 @@ function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function deriveClientName(rawName, email) {
+  const providedName = String(rawName || "").trim();
+  if (providedName) {
+    return providedName;
+  }
+
+  const emailLocalPart = String(email || "").split("@")[0] || "";
+  const candidate = emailLocalPart.replace(/[._-]+/g, " ").trim();
+  return candidate || "Creator";
+}
+
 function safeClient(client) {
   return {
     id: client.id,
@@ -580,12 +591,12 @@ app.get("/api/auth/me", requireAuth, (req, res) => {
 });
 
 app.post("/api/auth/register", async (req, res) => {
-  const name = String(req.body?.name || "").trim();
   const email = normalizeEmail(req.body?.email);
+  const name = deriveClientName(req.body?.name, email);
   const password = String(req.body?.password || "");
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: "Name, email, and password are required." });
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: "Please enter a valid email address." });
