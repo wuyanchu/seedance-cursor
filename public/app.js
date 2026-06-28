@@ -143,6 +143,36 @@ function clearStandaloneModes() {
   document.body.classList.remove("generator-active", "account-flow-active", "checkout-flow-active");
 }
 
+function scrollToElement(element, smooth = true) {
+  if (!element) {
+    return;
+  }
+
+  const supportsSmooth = typeof document.documentElement.style.scrollBehavior === "string";
+  const behavior = smooth && supportsSmooth ? "smooth" : "auto";
+
+  try {
+    element.scrollIntoView({ behavior, block: "start" });
+  } catch {
+    // Older Safari versions may only support the boolean signature.
+    element.scrollIntoView(true);
+  }
+}
+
+function getHashTarget(targetHash, fallbackId = "generator") {
+  if (typeof targetHash === "string" && targetHash.startsWith("#")) {
+    const id = targetHash.slice(1);
+    if (id) {
+      const byId = document.getElementById(id);
+      if (byId) {
+        return byId;
+      }
+    }
+  }
+
+  return document.getElementById(fallbackId);
+}
+
 function revealLoginArea({ scroll = true } = {}) {
   state.loginRequested = true;
   state.creditFlowRequested = false;
@@ -150,7 +180,7 @@ function revealLoginArea({ scroll = true } = {}) {
   document.body.classList.add("account-flow-active");
   updateAuthUi();
   if (scroll) {
-    accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToElement(accountSection);
   }
 }
 
@@ -161,7 +191,7 @@ function openPaymentView({ scroll = true } = {}) {
   document.body.classList.add("checkout-flow-active");
   updateAuthUi();
   if (scroll) {
-    purchaseCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToElement(purchaseCard);
   }
 }
 
@@ -177,7 +207,7 @@ function openCreditFlow() {
   clearStandaloneModes();
   document.body.classList.add("account-flow-active");
   updateAuthUi();
-  accountSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToElement(accountSection);
 }
 
 function closeAccountFlow() {
@@ -185,7 +215,7 @@ function closeAccountFlow() {
   state.creditFlowRequested = false;
   clearStandaloneModes();
   updateAuthUi();
-  document.getElementById("pricing").scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToElement(document.getElementById("pricing"));
 }
 
 function openGeneratorView(targetHash = "#generator") {
@@ -193,14 +223,14 @@ function openGeneratorView(targetHash = "#generator") {
   document.body.classList.add("generator-active");
   generatorPanel.classList.remove("hidden");
 
-  const target = document.querySelector(targetHash) || document.getElementById("generator");
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  const target = getHashTarget(targetHash, "generator");
+  scrollToElement(target);
 }
 
 function closeGeneratorView() {
   document.body.classList.remove("generator-active");
   generatorPanel.classList.add("hidden");
-  document.getElementById("generator").scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToElement(document.getElementById("generator"));
 }
 
 async function apiFetch(url, options = {}) {
@@ -220,7 +250,8 @@ async function apiFetch(url, options = {}) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload?.error || "Request failed.");
+    const errorMessage = payload && payload.error ? payload.error : "Request failed.";
+    throw new Error(errorMessage);
   }
 
   return payload;
@@ -265,7 +296,7 @@ function setPayPalStatus(message, isError = false) {
 }
 
 function loadPayPalSdk(clientId, currency) {
-  if (window.paypal?.Buttons) {
+  if (window.paypal && window.paypal.Buttons) {
     return Promise.resolve();
   }
 
@@ -444,7 +475,10 @@ document.querySelectorAll("[data-close-account-flow]").forEach((link) => {
 document.querySelectorAll("[data-open-generator]").forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
-    openGeneratorView(link.getAttribute("href") || "#generator");
+    const currentTarget = event.currentTarget;
+    const targetHash =
+      currentTarget && typeof currentTarget.getAttribute === "function" ? currentTarget.getAttribute("href") || "#generator" : "#generator";
+    openGeneratorView(targetHash);
   });
 });
 
