@@ -39,6 +39,7 @@ const AUTH_TOKEN_TTL_MS = Number(process.env.AUTH_TOKEN_TTL_MS) || 30 * 24 * 60 
 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
+const INITIAL_MEMBER_CREDITS = 100;
 const GENERATION_CREDIT_COST = 300;
 const CREDIT_PACKAGES = Object.freeze([
   {
@@ -140,12 +141,40 @@ function deriveClientName(rawName, email) {
   return candidate || "Creator";
 }
 
+function parseCredits(value) {
+  const credits = Number(value);
+  if (!Number.isFinite(credits) || credits < 0) {
+    return 0;
+  }
+  return credits;
+}
+
+async function ensureInitialCreditsForClient(clients, clientIndex) {
+  const client = clients[clientIndex];
+  if (!client) {
+    return null;
+  }
+
+  if (client.initialCreditsGranted) {
+    return client;
+  }
+
+  const upgradedClient = {
+    ...client,
+    credits: Math.max(parseCredits(client.credits), INITIAL_MEMBER_CREDITS),
+    initialCreditsGranted: true,
+  };
+  clients[clientIndex] = upgradedClient;
+  await writeJson(clientsFile, clients);
+  return upgradedClient;
+}
+
 function safeClient(client) {
   return {
     id: client.id,
     name: client.name,
     email: client.email,
-    credits: Number(client.credits || 0),
+    credits: parseCredits(client.credits),
     createdAt: client.createdAt,
   };
 }
@@ -233,11 +262,12 @@ async function requireAuth(req, res, next) {
   }
 
   const clients = await readJson(clientsFile, []);
-  const client = clients.find((entry) => entry.id === clientId);
-  if (!client) {
+  const clientIndex = clients.findIndex((entry) => entry.id === clientId);
+  if (clientIndex === -1) {
     return res.status(401).json({ error: "Account not found. Please log in again." });
   }
 
+  const client = await ensureInitialCreditsForClient(clients, clientIndex);
   req.authClient = client;
   return next();
 }
@@ -254,11 +284,12 @@ async function optionalAuth(req, _res, next) {
   }
 
   const clients = await readJson(clientsFile, []);
-  const client = clients.find((entry) => entry.id === clientId);
-  if (!client) {
+  const clientIndex = clients.findIndex((entry) => entry.id === clientId);
+  if (clientIndex === -1) {
     return next();
   }
 
+  const client = await ensureInitialCreditsForClient(clients, clientIndex);
   req.authClient = client;
   return next();
 }
@@ -644,7 +675,8 @@ app.post("/api/auth/register", async (req, res) => {
     name,
     email,
     passwordHash: hashPassword(password),
-    credits: 0,
+    credits: INITIAL_MEMBER_CREDITS,
+    initialCreditsGranted: true,
     createdAt: new Date().toISOString(),
   };
 
@@ -667,11 +699,12 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   const clients = await readJson(clientsFile, []);
-  const client = clients.find((entry) => entry.email === email);
-  if (!client || !verifyPassword(password, client.passwordHash)) {
+  const clientIndex = clients.findIndex((entry) => entry.email === email);
+  if (clientIndex === -1 || !verifyPassword(password, clients[clientIndex].passwordHash)) {
     return res.status(401).json({ error: "Email or password is incorrect." });
   }
 
+  const client = await ensureInitialCreditsForClient(clients, clientIndex);
   const token = createSession(client.id);
   return res.json({
     token,
