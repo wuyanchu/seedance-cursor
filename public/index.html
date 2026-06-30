@@ -352,6 +352,13 @@
             video uses 300 credits.
           </p>
 
+          <div class="paypal-checkout-card">
+            <p class="eyebrow">PayPal checkout</p>
+            <h3>Pay with PayPal</h3>
+            <p id="paypal-status" class="muted">Loading PayPal payment option...</p>
+            <div id="paypal-buttons"></div>
+          </div>
+
           <form id="purchase-form" class="purchase-form">
             <label for="package-select">Credit package</label>
             <select id="package-select" name="packageId" required>
@@ -380,24 +387,13 @@
                 <input name="expiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="12/30" required />
               </label>
               <label>
-                CVC
+                CVV
                 <input name="cvc" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="123" required />
-              </label>
-              <label>
-                Postal code
-                <input name="postalCode" type="text" autocomplete="postal-code" placeholder="10001" required />
               </label>
             </div>
 
             <button id="purchase-button" type="submit">Buy credits</button>
           </form>
-
-          <div class="paypal-checkout-card">
-            <p class="eyebrow">PayPal checkout</p>
-            <h3>Pay with PayPal</h3>
-            <p id="paypal-status" class="muted">Loading PayPal payment option...</p>
-            <div id="paypal-buttons"></div>
-          </div>
         </article>
       </section>
 

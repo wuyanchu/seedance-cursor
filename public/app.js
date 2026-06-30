@@ -544,7 +544,6 @@ purchaseForm.addEventListener("submit", async (event) => {
           cardNumber: formData.get("cardNumber"),
           expiry: formData.get("expiry"),
           cvc: formData.get("cvc"),
-          postalCode: formData.get("postalCode"),
         },
       }),
     });

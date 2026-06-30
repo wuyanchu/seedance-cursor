@@ -309,7 +309,6 @@ function validateCardPayment(card) {
   const cardNumber = String(card?.cardNumber || "").replace(/\D/g, "");
   const expiry = parseExpiry(card?.expiry);
   const cvc = String(card?.cvc || "").replace(/\D/g, "");
-  const postalCode = String(card?.postalCode || "").trim();
 
   if (cardholderName.length < 2) {
     throw new Error("Cardholder name is required.");
@@ -322,9 +321,6 @@ function validateCardPayment(card) {
   }
   if (cvc.length < 3 || cvc.length > 4) {
     throw new Error("Please enter a valid card security code.");
-  }
-  if (postalCode.length < 3) {
-    throw new Error("Billing postal code is required.");
   }
 
   return {
