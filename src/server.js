@@ -12,7 +12,7 @@ const port = Number(process.env.PORT) || 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "..", "public");
-const dataDir = path.join(__dirname, "..", "data");
+const dataDir = path.resolve(String(process.env.DATA_DIR || path.join(__dirname, "..", "data")).trim());
 const clientsFile = path.join(dataDir, "clients.json");
 const creditTransactionsFile = path.join(dataDir, "credit-transactions.json");
 
@@ -32,6 +32,10 @@ const PAYPAL_API_BASE_URL = String(
 )
   .trim()
   .replace(/\/+$/, "");
+const AUTH_TOKEN_SECRET = String(
+  process.env.AUTH_TOKEN_SECRET || process.env.PAYPAL_CLIENT_SECRET || process.env.SEEDANCE_API_KEY || "seedance-default-auth-secret",
+).trim();
+const AUTH_TOKEN_TTL_MS = Number(process.env.AUTH_TOKEN_TTL_MS) || 30 * 24 * 60 * 60 * 1000;
 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
@@ -68,7 +72,6 @@ const DEMO_VIDEO_URLS = Object.freeze([
   "https://static.seedancev2.ai/uploads/videos/seedance2-page-02-rain-dance-template.mp4",
   "https://static.seedancev2.ai/uploads/videos/seedance2-hero-1.mp4",
 ]);
-const sessions = new Map();
 const storageReady = initializeStorage();
 
 app.use(express.json());
@@ -168,12 +171,46 @@ function verifyPassword(password, passwordHash) {
 }
 
 function createSession(clientId) {
-  const token = crypto.randomBytes(32).toString("hex");
-  sessions.set(token, {
+  const payload = {
     clientId,
-    createdAt: Date.now(),
-  });
-  return token;
+    expiresAt: Date.now() + AUTH_TOKEN_TTL_MS,
+    nonce: crypto.randomBytes(8).toString("hex"),
+  };
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = crypto.createHmac("sha256", AUTH_TOKEN_SECRET).update(encodedPayload).digest("base64url");
+  return `${encodedPayload}.${signature}`;
+}
+
+function verifySessionToken(token) {
+  const [encodedPayload, providedSignature] = String(token || "").split(".");
+  if (!encodedPayload || !providedSignature) {
+    return "";
+  }
+
+  const expectedSignature = crypto.createHmac("sha256", AUTH_TOKEN_SECRET).update(encodedPayload).digest("base64url");
+  const providedBuffer = Buffer.from(providedSignature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (providedBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(providedBuffer, expectedBuffer)) {
+    return "";
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+  } catch {
+    return "";
+  }
+
+  if (!payload || typeof payload.clientId !== "string" || !payload.clientId.trim()) {
+    return "";
+  }
+
+  const expiresAt = Number(payload.expiresAt);
+  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) {
+    return "";
+  }
+
+  return payload.clientId;
 }
 
 function getBearerToken(req) {
@@ -190,19 +227,17 @@ async function requireAuth(req, res, next) {
     return res.status(401).json({ error: "Please log in before continuing." });
   }
 
-  const session = sessions.get(token);
-  if (!session) {
+  const clientId = verifySessionToken(token);
+  if (!clientId) {
     return res.status(401).json({ error: "Your session expired. Please log in again." });
   }
 
   const clients = await readJson(clientsFile, []);
-  const client = clients.find((entry) => entry.id === session.clientId);
+  const client = clients.find((entry) => entry.id === clientId);
   if (!client) {
-    sessions.delete(token);
     return res.status(401).json({ error: "Account not found. Please log in again." });
   }
 
-  req.authToken = token;
   req.authClient = client;
   return next();
 }
@@ -213,19 +248,17 @@ async function optionalAuth(req, _res, next) {
     return next();
   }
 
-  const session = sessions.get(token);
-  if (!session) {
+  const clientId = verifySessionToken(token);
+  if (!clientId) {
     return next();
   }
 
   const clients = await readJson(clientsFile, []);
-  const client = clients.find((entry) => entry.id === session.clientId);
+  const client = clients.find((entry) => entry.id === clientId);
   if (!client) {
-    sessions.delete(token);
     return next();
   }
 
-  req.authToken = token;
   req.authClient = client;
   return next();
 }
@@ -647,7 +680,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.post("/api/auth/logout", requireAuth, (req, res) => {
-  sessions.delete(req.authToken);
+  // Stateless auth tokens are invalidated client-side by clearing local storage.
   return res.json({ ok: true });
 });
 
@@ -683,7 +716,6 @@ app.post("/api/credits/purchase", requireAuth, async (req, res) => {
   const clients = await readJson(clientsFile, []);
   const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
   if (clientIndex === -1) {
-    sessions.delete(req.authToken);
     return res.status(401).json({ error: "Account not found. Please log in again." });
   }
 
@@ -814,7 +846,6 @@ app.post("/api/paypal/orders/:orderId/capture", requireAuth, async (req, res) =>
     const clients = await readJson(clientsFile, []);
     const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
     if (clientIndex === -1) {
-      sessions.delete(req.authToken);
       return res.status(401).json({ error: "Account not found. Please log in again." });
     }
 
