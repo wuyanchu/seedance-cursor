@@ -48,6 +48,7 @@ const DURATION_CREDIT_COSTS = Object.freeze({
   15: 1500,
 });
 const HD_RESOLUTION_CREDIT_SURCHARGE = 300;
+const EXTRA_GENERATION_CREDIT_COST = 200;
 const CREDIT_PACKAGES = Object.freeze([
   {
     id: "starter",
@@ -159,7 +160,7 @@ function parseCredits(value) {
 function calculateGenerationCreditCost(duration, resolution) {
   const durationCost = DURATION_CREDIT_COSTS[Number(duration)] || BASE_GENERATION_CREDIT_COST;
   const resolutionSurcharge = String(resolution || "").trim().toLowerCase() === "1080p" ? HD_RESOLUTION_CREDIT_SURCHARGE : 0;
-  return durationCost + resolutionSurcharge;
+  return durationCost + resolutionSurcharge + EXTRA_GENERATION_CREDIT_COST;
 }
 
 async function ensureInitialCreditsForClient(clients, clientIndex) {
