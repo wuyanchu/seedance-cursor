@@ -1,6 +1,13 @@
 const TOKEN_KEY = "seedance_client_token";
 const CLIENT_KEY = "seedance_client";
-const GENERATION_CREDIT_COST = 300;
+const BASE_GENERATION_CREDIT_COST = 300;
+const DURATION_CREDIT_COSTS = Object.freeze({
+  8: 800,
+  10: 1000,
+  12: 1200,
+  15: 1500,
+});
+const HD_RESOLUTION_CREDIT_SURCHARGE = 300;
 const DEFAULT_GUEST_CREDITS = 100;
 
 const state = {
@@ -106,13 +113,45 @@ function getAvailableCredits() {
   return DEFAULT_GUEST_CREDITS;
 }
 
-function showCreditModal(availableCredits) {
-  creditModalMessage.textContent = `Insufficient credit, you need ${GENERATION_CREDIT_COST} credit to generate but only have ${availableCredits}.`;
+function getGenerationCreditCost(duration, resolution) {
+  const durationCost = DURATION_CREDIT_COSTS[Number(duration)] || BASE_GENERATION_CREDIT_COST;
+  const resolutionSurcharge = String(resolution || "").trim().toLowerCase() === "1080p" ? HD_RESOLUTION_CREDIT_SURCHARGE : 0;
+  return durationCost + resolutionSurcharge;
+}
+
+function getSelectedGenerationCost() {
+  if (!form) {
+    return BASE_GENERATION_CREDIT_COST;
+  }
+  const durationField = form.querySelector('select[name="duration"]');
+  const resolutionField = form.querySelector('select[name="resolution"]');
+  const duration = Number.parseInt(durationField ? String(durationField.value || "5") : "5", 10);
+  const resolution = resolutionField ? String(resolutionField.value || "720p") : "720p";
+  return getGenerationCreditCost(duration, resolution);
+}
+
+function showCreditModal(requiredCredits, availableCredits) {
+  creditModalMessage.textContent = `Insufficient credit, you need ${requiredCredits} credit to generate but only have ${availableCredits}.`;
   creditModal.classList.remove("hidden");
 }
 
 function hideCreditModal() {
   creditModal.classList.add("hidden");
+}
+
+function updateGenerationCreditNote() {
+  if (!generationCreditNote) {
+    return;
+  }
+  const requiredCredits = getSelectedGenerationCost();
+  const value = generationCreditNote.querySelector("strong");
+  const description = generationCreditNote.querySelector("span");
+  if (value) {
+    value.textContent = `${requiredCredits} credits`;
+  }
+  if (description) {
+    description.textContent = "required for current settings";
+  }
 }
 
 function tryPlayVideo(video) {
@@ -586,8 +625,9 @@ form.addEventListener("submit", async (event) => {
   }
 
   const availableCredits = getAvailableCredits();
-  if (availableCredits < GENERATION_CREDIT_COST) {
-    showCreditModal(availableCredits);
+  const requiredCredits = getGenerationCreditCost(duration, resolution);
+  if (availableCredits < requiredCredits) {
+    showCreditModal(requiredCredits, availableCredits);
     return;
   }
 
@@ -635,6 +675,18 @@ form.addEventListener("submit", async (event) => {
     setGenerating(false);
   }
 });
+
+form.addEventListener("change", (event) => {
+  const target = event.target;
+  if (!target) {
+    return;
+  }
+  if (target.name === "duration" || target.name === "resolution") {
+    updateGenerationCreditNote();
+  }
+});
+
+updateGenerationCreditNote();
 
 restoreSession()
   .then(loadPackages)

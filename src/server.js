@@ -40,7 +40,14 @@ const AUTH_TOKEN_TTL_MS = Number(process.env.AUTH_TOKEN_TTL_MS) || 30 * 24 * 60 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
 const INITIAL_MEMBER_CREDITS = 100;
-const GENERATION_CREDIT_COST = 300;
+const BASE_GENERATION_CREDIT_COST = 300;
+const DURATION_CREDIT_COSTS = Object.freeze({
+  8: 800,
+  10: 1000,
+  12: 1200,
+  15: 1500,
+});
+const HD_RESOLUTION_CREDIT_SURCHARGE = 300;
 const CREDIT_PACKAGES = Object.freeze([
   {
     id: "starter",
@@ -147,6 +154,12 @@ function parseCredits(value) {
     return 0;
   }
   return credits;
+}
+
+function calculateGenerationCreditCost(duration, resolution) {
+  const durationCost = DURATION_CREDIT_COSTS[Number(duration)] || BASE_GENERATION_CREDIT_COST;
+  const resolutionSurcharge = String(resolution || "").trim().toLowerCase() === "1080p" ? HD_RESOLUTION_CREDIT_SURCHARGE : 0;
+  return durationCost + resolutionSurcharge;
 }
 
 async function ensureInitialCreditsForClient(clients, clientIndex) {
@@ -939,6 +952,8 @@ app.post("/api/videos/generate", optionalAuth, async (req, res) => {
     return res.status(400).json({ error: "Duration must be an integer between 4 and 15 seconds." });
   }
 
+  const creditsRequired = calculateGenerationCreditCost(duration, resolution);
+
   if (!SEEDANCE_API_KEY) {
     const taskId = `demo-${crypto.randomUUID()}`;
     const videoUrl = selectDemoVideoUrl(prompt);
@@ -948,11 +963,32 @@ app.post("/api/videos/generate", optionalAuth, async (req, res) => {
       taskId,
       videoUrl,
       downloadUrl: `/api/videos/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename)}`,
-      creditsRemaining: req.authClient ? Number(req.authClient.credits || 0) : null,
+      creditsRequired,
+      creditsRemaining: req.authClient ? parseCredits(req.authClient.credits) : null,
       demo: true,
       notice:
         "Demo video returned because the server is missing SEEDANCE_API_KEY. Add the key to enable real Seedance generation.",
     });
+  }
+
+  let authClientContext = null;
+  if (req.authClient) {
+    const clients = await readJson(clientsFile, []);
+    const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
+    if (clientIndex === -1) {
+      return res.status(401).json({ error: "Account not found. Please log in again." });
+    }
+
+    const currentCredits = parseCredits(clients[clientIndex].credits);
+    if (currentCredits < creditsRequired) {
+      return res.status(402).json({
+        error: `Insufficient credit, you need ${creditsRequired} credit to generate but only have ${currentCredits}.`,
+        creditsRequired,
+        creditsRemaining: currentCredits,
+      });
+    }
+
+    authClientContext = { clients, clientIndex };
   }
 
   try {
@@ -968,22 +1004,19 @@ app.post("/api/videos/generate", optionalAuth, async (req, res) => {
     const safeFilename = `${taskId}.mp4`;
     let creditsRemaining = null;
 
-    if (req.authClient) {
-      const clients = await readJson(clientsFile, []);
-      const clientIndex = clients.findIndex((client) => client.id === req.authClient.id);
-      if (clientIndex !== -1 && Number(clients[clientIndex].credits || 0) >= GENERATION_CREDIT_COST) {
-        clients[clientIndex].credits = Number(clients[clientIndex].credits || 0) - GENERATION_CREDIT_COST;
-        await writeJson(clientsFile, clients);
-        creditsRemaining = Number(clients[clientIndex].credits || 0);
-      } else if (clientIndex !== -1) {
-        creditsRemaining = Number(clients[clientIndex].credits || 0);
-      }
+    if (authClientContext) {
+      const { clients, clientIndex } = authClientContext;
+      const currentCredits = parseCredits(clients[clientIndex].credits);
+      clients[clientIndex].credits = Math.max(0, currentCredits - creditsRequired);
+      await writeJson(clientsFile, clients);
+      creditsRemaining = parseCredits(clients[clientIndex].credits);
     }
 
     return res.status(201).json({
       taskId,
       videoUrl,
       downloadUrl: `/api/videos/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(safeFilename)}`,
+      creditsRequired,
       creditsRemaining,
     });
   } catch (error) {
