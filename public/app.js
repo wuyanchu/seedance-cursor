@@ -16,6 +16,7 @@ const generateButton = document.getElementById("generate-button");
 const generateButtonLabel = generateButton.querySelector(".button-label");
 const generatorPanel = document.getElementById("generator-panel");
 const promptLoginPanel = document.getElementById("prompt-login-panel");
+const generationCreditNote = document.querySelector(".generation-credit-note");
 const statusText = document.getElementById("status-text");
 const taskIdText = document.getElementById("task-id");
 const resultCard = document.getElementById("result-card");
@@ -142,6 +143,9 @@ function updateAuthUi() {
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
     purchaseCard.classList.toggle("hidden", !state.creditFlowRequested);
+    if (generationCreditNote) {
+      generationCreditNote.classList.add("hidden");
+    }
   } else {
     setAuthStatus("Create an account or log in to generate videos.");
     creditBalance.textContent = "0";
@@ -152,6 +156,9 @@ function updateAuthUi() {
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
     purchaseCard.classList.add("hidden");
+    if (generationCreditNote) {
+      generationCreditNote.classList.remove("hidden");
+    }
   }
 }
 
