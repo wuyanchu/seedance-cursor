@@ -653,6 +653,32 @@ button:disabled,
   max-width: 860px;
 }
 
+/* Fallback behavior when frontend JS fails to initialize. */
+#generator:target {
+  grid-template-columns: 1fr;
+}
+
+#generator:target .hero-content,
+#generator:target .hero-info-panel {
+  display: none;
+}
+
+#generator:target #generator-panel {
+  display: grid !important;
+  width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+#account:target {
+  display: grid !important;
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}
+
+#account:target .purchase-card {
+  display: none;
+}
+
 body.generator-active .page > section:not(#generator):not(#account) {
   display: none;
 }
