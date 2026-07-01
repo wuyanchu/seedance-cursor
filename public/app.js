@@ -8,7 +8,7 @@ const DURATION_CREDIT_COSTS = Object.freeze({
   15: 1500,
 });
 const HD_RESOLUTION_CREDIT_SURCHARGE = 300;
-const EXTRA_GENERATION_CREDIT_COST = 200;
+const GENERATE_AUDIO_CREDIT_SURCHARGE = 200;
 const DEFAULT_GUEST_CREDITS = 100;
 
 const state = {
@@ -114,10 +114,11 @@ function getAvailableCredits() {
   return DEFAULT_GUEST_CREDITS;
 }
 
-function getGenerationCreditCost(duration, resolution) {
+function getGenerationCreditCost(duration, resolution, generateAudio) {
   const durationCost = DURATION_CREDIT_COSTS[Number(duration)] || BASE_GENERATION_CREDIT_COST;
   const resolutionSurcharge = String(resolution || "").trim().toLowerCase() === "1080p" ? HD_RESOLUTION_CREDIT_SURCHARGE : 0;
-  return durationCost + resolutionSurcharge + EXTRA_GENERATION_CREDIT_COST;
+  const audioSurcharge = generateAudio ? GENERATE_AUDIO_CREDIT_SURCHARGE : 0;
+  return durationCost + resolutionSurcharge + audioSurcharge;
 }
 
 function getSelectedGenerationCost() {
@@ -126,9 +127,11 @@ function getSelectedGenerationCost() {
   }
   const durationField = form.querySelector('select[name="duration"]');
   const resolutionField = form.querySelector('select[name="resolution"]');
+  const audioField = form.querySelector('input[name="generateAudio"]');
   const duration = Number.parseInt(durationField ? String(durationField.value || "5") : "5", 10);
   const resolution = resolutionField ? String(resolutionField.value || "720p") : "720p";
-  return getGenerationCreditCost(duration, resolution);
+  const generateAudio = audioField ? Boolean(audioField.checked) : true;
+  return getGenerationCreditCost(duration, resolution, generateAudio);
 }
 
 function showCreditModal(requiredCredits, availableCredits) {
@@ -626,7 +629,7 @@ form.addEventListener("submit", async (event) => {
   }
 
   const availableCredits = getAvailableCredits();
-  const requiredCredits = getGenerationCreditCost(duration, resolution);
+  const requiredCredits = getGenerationCreditCost(duration, resolution, generateAudio);
   if (availableCredits < requiredCredits) {
     showCreditModal(requiredCredits, availableCredits);
     return;
@@ -682,7 +685,7 @@ form.addEventListener("change", (event) => {
   if (!target) {
     return;
   }
-  if (target.name === "duration" || target.name === "resolution") {
+  if (target.name === "duration" || target.name === "resolution" || target.name === "generateAudio") {
     updateGenerationCreditNote();
   }
 });
