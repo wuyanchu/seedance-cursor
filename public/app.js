@@ -31,6 +31,7 @@ const resultCard = document.getElementById("result-card");
 const resultVideo = document.getElementById("result-video");
 const downloadLink = document.getElementById("download-link");
 const openLink = document.getElementById("open-link");
+const headerCreditPill = document.getElementById("header-credit-pill");
 const headerCreditValue = document.getElementById("header-credit-value");
 const headerLoginLink = document.getElementById("header-login-link");
 const headerLogoutButton = document.getElementById("header-logout-button");
@@ -138,7 +139,11 @@ function getSelectedGenerationCost() {
 }
 
 function showCreditModal(requiredCredits, availableCredits) {
-  creditModalMessage.textContent = `Insufficient credit, you need ${requiredCredits} credit to generate but only have ${availableCredits}.`;
+  if (!state.client) {
+    creditModalMessage.textContent = "Insufficient credit, you need 300 credit to generate but only have 100.";
+  } else {
+    creditModalMessage.textContent = `Insufficient credit, you need ${requiredCredits} credit to generate but only have ${availableCredits}.`;
+  }
   creditModal.classList.remove("hidden");
 }
 
@@ -151,14 +156,13 @@ function updateGenerationCreditNote() {
     return;
   }
   const requiredCredits = BASE_GENERATION_CREDIT_COST;
-  const availableCredits = getAvailableCredits();
   const value = generationCreditNote.querySelector("strong");
   const description = generationCreditNote.querySelector("span");
   if (value) {
     value.textContent = `Need ${requiredCredits} credits`;
   }
   if (description) {
-    description.textContent = `to generate a video. You now have ${availableCredits} credits.`;
+    description.textContent = "to generate a video.";
   }
 }
 
@@ -186,6 +190,9 @@ function updateAuthUi() {
   }
 
   if (state.client) {
+    if (headerCreditPill) {
+      headerCreditPill.classList.remove("hidden");
+    }
     setAuthStatus(`Logged in as ${getClientDisplayName(state.client)}.`);
     creditBalance.textContent = String(availableCredits);
     accountSection.classList.toggle("hidden", !state.loginRequested && !state.creditFlowRequested);
@@ -205,6 +212,9 @@ function updateAuthUi() {
       generationCreditNote.classList.add("hidden");
     }
   } else {
+    if (headerCreditPill) {
+      headerCreditPill.classList.add("hidden");
+    }
     setAuthStatus("Create an account or log in to generate videos.");
     creditBalance.textContent = String(availableCredits);
     accountSection.classList.toggle("hidden", !state.loginRequested);
