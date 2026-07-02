@@ -211,6 +211,46 @@ a {
   gap: 8px;
 }
 
+.nav-account-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.header-credit-pill {
+  display: grid;
+  min-width: 108px;
+  place-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-soft);
+}
+
+.header-credit-pill span {
+  color: var(--violet);
+  font-size: 1.15rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.header-credit-pill small {
+  color: #475467;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.header-login-link,
+.header-logout-button {
+  width: auto;
+  min-width: 94px;
+}
+
 .nav-links a {
   padding: 10px 14px;
   border-radius: 999px;
@@ -1841,6 +1881,12 @@ textarea {
     justify-content: flex-start;
   }
 
+  .nav-account-tools {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
   .video-hero,
   .directory-hero {
     padding: 18px;
@@ -1890,5 +1936,10 @@ textarea {
 
   .button-link {
     width: 100%;
+  }
+
+  .nav-account-tools .button-link,
+  .nav-account-tools .secondary-btn {
+    width: auto;
   }
 }

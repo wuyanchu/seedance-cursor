@@ -31,6 +31,9 @@ const resultCard = document.getElementById("result-card");
 const resultVideo = document.getElementById("result-video");
 const downloadLink = document.getElementById("download-link");
 const openLink = document.getElementById("open-link");
+const headerCreditValue = document.getElementById("header-credit-value");
+const headerLoginLink = document.getElementById("header-login-link");
+const headerLogoutButton = document.getElementById("header-logout-button");
 const authStatus = document.getElementById("auth-status");
 const creditBalance = document.getElementById("credit-balance");
 const accountSection = document.getElementById("account");
@@ -147,14 +150,15 @@ function updateGenerationCreditNote() {
   if (!generationCreditNote) {
     return;
   }
-  const requiredCredits = getSelectedGenerationCost();
+  const requiredCredits = BASE_GENERATION_CREDIT_COST;
+  const availableCredits = getAvailableCredits();
   const value = generationCreditNote.querySelector("strong");
   const description = generationCreditNote.querySelector("span");
   if (value) {
-    value.textContent = `${requiredCredits} credits`;
+    value.textContent = `Need ${requiredCredits} credits`;
   }
   if (description) {
-    description.textContent = "required for current settings";
+    description.textContent = `to generate a video. You now have ${availableCredits} credits.`;
   }
 }
 
@@ -176,13 +180,24 @@ function initAutoplayVideos() {
 }
 
 function updateAuthUi() {
+  const availableCredits = getAvailableCredits();
+  if (headerCreditValue) {
+    headerCreditValue.textContent = String(availableCredits);
+  }
+
   if (state.client) {
     setAuthStatus(`Logged in as ${getClientDisplayName(state.client)}.`);
-    creditBalance.textContent = String(state.client.credits || 0);
+    creditBalance.textContent = String(availableCredits);
     accountSection.classList.toggle("hidden", !state.loginRequested && !state.creditFlowRequested);
     promptLoginPanel.classList.add("hidden");
     form.classList.remove("hidden");
     logoutButton.classList.remove("hidden");
+    if (headerLogoutButton) {
+      headerLogoutButton.classList.remove("hidden");
+    }
+    if (headerLoginLink) {
+      headerLoginLink.classList.add("hidden");
+    }
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
     purchaseCard.classList.toggle("hidden", !state.creditFlowRequested);
@@ -191,11 +206,17 @@ function updateAuthUi() {
     }
   } else {
     setAuthStatus("Create an account or log in to generate videos.");
-    creditBalance.textContent = "0";
+    creditBalance.textContent = String(availableCredits);
     accountSection.classList.toggle("hidden", !state.loginRequested);
     promptLoginPanel.classList.add("hidden");
     form.classList.remove("hidden");
     logoutButton.classList.add("hidden");
+    if (headerLogoutButton) {
+      headerLogoutButton.classList.add("hidden");
+    }
+    if (headerLoginLink) {
+      headerLoginLink.classList.remove("hidden");
+    }
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
     purchaseCard.classList.add("hidden");
@@ -203,6 +224,7 @@ function updateAuthUi() {
       generationCreditNote.classList.remove("hidden");
     }
   }
+  updateGenerationCreditNote();
 }
 
 function clearStandaloneModes() {
@@ -556,7 +578,7 @@ document.querySelectorAll("[data-close-generator]").forEach((link) => {
   });
 });
 
-logoutButton.addEventListener("click", async () => {
+async function handleLogout() {
   try {
     await apiFetch("/api/auth/logout", { method: "POST" });
   } catch {
@@ -567,7 +589,12 @@ logoutButton.addEventListener("click", async () => {
   state.creditFlowRequested = false;
   updateAuthUi();
   setStatus("Logged out.");
-});
+}
+
+logoutButton.addEventListener("click", handleLogout);
+if (headerLogoutButton) {
+  headerLogoutButton.addEventListener("click", handleLogout);
+}
 
 packageSelect.addEventListener("change", updatePackageDetails);
 

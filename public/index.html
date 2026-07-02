@@ -36,8 +36,15 @@
           <a href="#creators">Creators</a>
           <a href="#how-it-works">How it works</a>
           <a href="#faq">FAQ</a>
-          <a href="#account" data-open-login>Login</a>
         </nav>
+        <div class="nav-account-tools" aria-label="Account actions">
+          <div class="header-credit-pill">
+            <span id="header-credit-value">100</span>
+            <small>credits left</small>
+          </div>
+          <a id="header-login-link" class="button-link secondary header-login-link" href="#account" data-open-login>Login</a>
+          <button id="header-logout-button" class="secondary-btn header-logout-button hidden" type="button">Log out</button>
+        </div>
       </div>
     </header>
 
@@ -157,8 +164,8 @@
             </label>
 
             <div class="generation-credit-note">
-              <strong>300 credits</strong>
-              <span>required for current settings</span>
+              <strong>Need 300 credits</strong>
+              <span>to generate a video. You now have 100 credits.</span>
             </div>
 
             <button id="generate-button" type="submit">
