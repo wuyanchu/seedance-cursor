@@ -24,7 +24,6 @@ const generateButton = document.getElementById("generate-button");
 const generateButtonLabel = generateButton.querySelector(".button-label");
 const generatorPanel = document.getElementById("generator-panel");
 const promptLoginPanel = document.getElementById("prompt-login-panel");
-const generationCreditNote = document.querySelector(".generation-credit-note");
 const statusText = document.getElementById("status-text");
 const taskIdText = document.getElementById("task-id");
 const resultCard = document.getElementById("result-card");
@@ -125,19 +124,6 @@ function getGenerationCreditCost(duration, resolution, generateAudio) {
   return durationCost + resolutionSurcharge + audioSurcharge;
 }
 
-function getSelectedGenerationCost() {
-  if (!form) {
-    return BASE_GENERATION_CREDIT_COST;
-  }
-  const durationField = form.querySelector('select[name="duration"]');
-  const resolutionField = form.querySelector('select[name="resolution"]');
-  const audioField = form.querySelector('input[name="generateAudio"]');
-  const duration = Number.parseInt(durationField ? String(durationField.value || "5") : "5", 10);
-  const resolution = resolutionField ? String(resolutionField.value || "720p") : "720p";
-  const generateAudio = audioField ? Boolean(audioField.checked) : true;
-  return getGenerationCreditCost(duration, resolution, generateAudio);
-}
-
 function showCreditModal(requiredCredits, availableCredits) {
   if (!state.client) {
     creditModalMessage.textContent = "Insufficient credit, you need 300 credit to generate but only have 100.";
@@ -149,21 +135,6 @@ function showCreditModal(requiredCredits, availableCredits) {
 
 function hideCreditModal() {
   creditModal.classList.add("hidden");
-}
-
-function updateGenerationCreditNote() {
-  if (!generationCreditNote) {
-    return;
-  }
-  const requiredCredits = BASE_GENERATION_CREDIT_COST;
-  const value = generationCreditNote.querySelector("strong");
-  const description = generationCreditNote.querySelector("span");
-  if (value) {
-    value.textContent = `Need ${requiredCredits} credits`;
-  }
-  if (description) {
-    description.textContent = "to generate a video.";
-  }
 }
 
 function tryPlayVideo(video) {
@@ -208,9 +179,6 @@ function updateAuthUi() {
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
     purchaseCard.classList.toggle("hidden", !state.creditFlowRequested);
-    if (generationCreditNote) {
-      generationCreditNote.classList.add("hidden");
-    }
   } else {
     if (headerCreditPill) {
       headerCreditPill.classList.add("hidden");
@@ -230,11 +198,7 @@ function updateAuthUi() {
     registerForm.classList.remove("hidden");
     loginForm.classList.remove("hidden");
     purchaseCard.classList.add("hidden");
-    if (generationCreditNote) {
-      generationCreditNote.classList.remove("hidden");
-    }
   }
-  updateGenerationCreditNote();
 }
 
 function clearStandaloneModes() {
@@ -716,18 +680,6 @@ form.addEventListener("submit", async (event) => {
     setGenerating(false);
   }
 });
-
-form.addEventListener("change", (event) => {
-  const target = event.target;
-  if (!target) {
-    return;
-  }
-  if (target.name === "duration" || target.name === "resolution" || target.name === "generateAudio") {
-    updateGenerationCreditNote();
-  }
-});
-
-updateGenerationCreditNote();
 
 restoreSession()
   .then(loadPackages)
