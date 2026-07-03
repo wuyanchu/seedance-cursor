@@ -1,9 +1,9 @@
-# Seedance 2.0 Video Generator Website
+# Seedance 2.5 Video Generator Website
 
 This project provides a client-facing website that:
 
 1. accepts a text prompt,
-2. requests video generation from Seedance 2.0,
+2. requests video generation from Seedance 2.5,
 3. polls until the task finishes, and
 4. lets the client preview and download the generated video.
 
