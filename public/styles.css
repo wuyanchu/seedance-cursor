@@ -228,6 +228,16 @@ a {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.85);
   box-shadow: var(--shadow-soft);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.header-credit-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(124, 58, 237, 0.14);
 }
 
 .header-credit-pill span {
