@@ -45,6 +45,8 @@ const purchaseForm = document.getElementById("purchase-form");
 const packageSelect = document.getElementById("package-select");
 const packageDetails = document.getElementById("package-details");
 const purchaseButton = document.getElementById("purchase-button");
+const googleRegisterButton = document.getElementById("google-register-button");
+const googleLoginButton = document.getElementById("google-login-button");
 const creditModal = document.getElementById("credit-modal");
 const creditModalMessage = document.getElementById("credit-modal-message");
 const creditModalClose = document.getElementById("credit-modal-close");
@@ -74,6 +76,12 @@ function getClientDisplayName(client) {
 function setAuthStatus(message, isError = false) {
   authStatus.textContent = message;
   authStatus.classList.toggle("is-error", isError);
+}
+
+function setGoogleAuthVisibility(isVisible) {
+  document.querySelectorAll(".google-auth-block, .google-auth-divider").forEach((element) => {
+    element.classList.toggle("hidden", !isVisible);
+  });
 }
 
 function updateClient(client) {
@@ -372,6 +380,102 @@ function loadPayPalSdk(clientId, currency) {
     script.onerror = () => reject(new Error("Unable to load PayPal checkout."));
     document.head.appendChild(script);
   });
+}
+
+function loadGoogleSdk() {
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const existingScript = document.querySelector('script[data-google-gsi="true"]');
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve());
+      existingScript.addEventListener("error", () => reject(new Error("Unable to load Google sign-in.")));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.dataset.googleGsi = "true";
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Unable to load Google sign-in."));
+    document.head.appendChild(script);
+  });
+}
+
+function renderGoogleButton(target) {
+  if (!target || !(window.google && window.google.accounts && window.google.accounts.id)) {
+    return;
+  }
+  target.innerHTML = "";
+  window.google.accounts.id.renderButton(target, {
+    theme: "outline",
+    size: "large",
+    shape: "pill",
+    text: "continue_with",
+    width: Math.min(320, Math.max(220, target.clientWidth || 260)),
+  });
+}
+
+async function handleGoogleSignInResponse(response) {
+  const credential = response && typeof response === "object" ? String(response.credential || "").trim() : "";
+  if (!credential) {
+    setAuthStatus("Google sign-in failed. Please try again.", true);
+    setStatus("Google sign-in failed. Please try again.", true);
+    return;
+  }
+
+  try {
+    const payload = await apiFetch("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    });
+    setSession(payload.token, payload.client);
+    setStatus("Logged in with Google. Your credits are ready to use.");
+    if (state.creditFlowRequested) {
+      openPaymentView();
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Google sign-in failed.";
+    setAuthStatus(message, true);
+    setStatus(message, true);
+  }
+}
+
+async function initGoogleSignIn() {
+  if (!googleRegisterButton && !googleLoginButton) {
+    return;
+  }
+
+  setGoogleAuthVisibility(false);
+
+  try {
+    const config = await apiFetch("/api/auth/google/config");
+    if (!config.configured || !config.clientId) {
+      return;
+    }
+
+    await loadGoogleSdk();
+    if (!(window.google && window.google.accounts && window.google.accounts.id)) {
+      throw new Error("Google sign-in library is unavailable.");
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: config.clientId,
+      callback: handleGoogleSignInResponse,
+      ux_mode: "popup",
+    });
+
+    renderGoogleButton(googleRegisterButton);
+    renderGoogleButton(googleLoginButton);
+    setGoogleAuthVisibility(true);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to load Google sign-in.";
+    setStatus(message, true);
+  }
 }
 
 async function initPayPalCheckout() {
@@ -683,6 +787,7 @@ form.addEventListener("submit", async (event) => {
 
 restoreSession()
   .then(loadPackages)
+  .then(initGoogleSignIn)
   .then(initPayPalCheckout)
   .then(initAutoplayVideos)
   .catch((error) => {

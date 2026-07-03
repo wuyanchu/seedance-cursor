@@ -1780,6 +1780,46 @@ textarea {
   margin-top: 0;
 }
 
+.google-auth-block {
+  margin-top: 4px;
+}
+
+.google-signin-button {
+  min-height: 40px;
+}
+
+.auth-divider {
+  margin: 4px 0 2px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.auth-divider span {
+  position: relative;
+  display: inline-block;
+  padding: 0 12px;
+}
+
+.auth-divider span::before,
+.auth-divider span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 52px;
+  border-top: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.auth-divider span::before {
+  right: 100%;
+}
+
+.auth-divider span::after {
+  left: 100%;
+}
+
 .site-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.62);
   background: rgba(255, 255, 255, 0.58);

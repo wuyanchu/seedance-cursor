@@ -26,6 +26,7 @@ const SEEDANCE_POLL_INTERVAL_MS = Number(process.env.SEEDANCE_POLL_INTERVAL_MS) 
 const PAYPAL_CLIENT_ID = String(process.env.PAYPAL_CLIENT_ID || "").trim();
 const PAYPAL_CLIENT_SECRET = String(process.env.PAYPAL_CLIENT_SECRET || "").trim();
 const PAYPAL_ENV = String(process.env.PAYPAL_ENV || "sandbox").trim().toLowerCase();
+const GOOGLE_CLIENT_ID = String(process.env.GOOGLE_CLIENT_ID || "").trim();
 const PAYPAL_API_BASE_URL = String(
   process.env.PAYPAL_API_BASE_URL ||
     (PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"),
@@ -412,12 +413,49 @@ function findCreditPackage(packageId) {
   return CREDIT_PACKAGES.find((entry) => entry.id === packageId);
 }
 
+function isGoogleAuthConfigured() {
+  return Boolean(GOOGLE_CLIENT_ID);
+}
+
 function isPayPalConfigured() {
   return Boolean(PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET);
 }
 
 function amountLabel(amountCents) {
   return (amountCents / 100).toFixed(2);
+}
+
+async function verifyGoogleCredential(idToken) {
+  const token = String(idToken || "").trim();
+  if (!token) {
+    throw new Error("Missing Google credential token.");
+  }
+
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error_description || payload.error || "Unable to verify Google credential.");
+  }
+
+  const issuer = String(payload.iss || "").trim();
+  if (issuer !== "https://accounts.google.com" && issuer !== "accounts.google.com") {
+    throw new Error("Google credential issuer is invalid.");
+  }
+  if (!payload?.email || String(payload.email_verified || "").toLowerCase() !== "true") {
+    throw new Error("Google account email is not verified.");
+  }
+  if (GOOGLE_CLIENT_ID && String(payload.aud || "").trim() !== GOOGLE_CLIENT_ID) {
+    throw new Error("Google credential does not match this app.");
+  }
+
+  const email = normalizeEmail(payload.email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Google account email is invalid.");
+  }
+  const name = deriveClientName(payload.name || payload.given_name, email);
+  const googleSub = String(payload.sub || "").trim();
+
+  return { email, name, googleSub };
 }
 
 async function getPayPalAccessToken() {
@@ -720,6 +758,68 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   const client = await ensureInitialCreditsForClient(clients, clientIndex);
+  const token = createSession(client.id);
+  return res.json({
+    token,
+    client: safeClient(client),
+  });
+});
+
+app.get("/api/auth/google/config", (_req, res) => {
+  return res.json({
+    configured: isGoogleAuthConfigured(),
+    clientId: isGoogleAuthConfigured() ? GOOGLE_CLIENT_ID : "",
+  });
+});
+
+app.post("/api/auth/google", async (req, res) => {
+  if (!isGoogleAuthConfigured()) {
+    return res.status(503).json({ error: "Google login is not configured on this server." });
+  }
+
+  let googleProfile;
+  try {
+    googleProfile = await verifyGoogleCredential(req.body?.credential);
+  } catch (error) {
+    return res.status(401).json({
+      error: error instanceof Error ? error.message : "Google sign-in failed.",
+    });
+  }
+
+  const clients = await readJson(clientsFile, []);
+  const existingIndex = clients.findIndex((entry) => entry.email === googleProfile.email);
+  let client;
+
+  if (existingIndex === -1) {
+    client = {
+      id: crypto.randomUUID(),
+      name: googleProfile.name,
+      email: googleProfile.email,
+      googleSub: googleProfile.googleSub,
+      passwordHash: "",
+      credits: INITIAL_MEMBER_CREDITS,
+      initialCreditsGranted: true,
+      createdAt: new Date().toISOString(),
+    };
+    clients.push(client);
+    await writeJson(clientsFile, clients);
+  } else {
+    let didUpdate = false;
+    const existing = clients[existingIndex];
+    if (!String(existing.googleSub || "").trim() && googleProfile.googleSub) {
+      existing.googleSub = googleProfile.googleSub;
+      didUpdate = true;
+    }
+    if (!String(existing.name || "").trim()) {
+      existing.name = googleProfile.name;
+      didUpdate = true;
+    }
+    if (didUpdate) {
+      await writeJson(clientsFile, clients);
+    }
+    client = await ensureInitialCreditsForClient(clients, existingIndex);
+  }
+
   const token = createSession(client.id);
   return res.json({
     token,
