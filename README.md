@@ -65,6 +65,6 @@ Open:
 
 ## SEO Notes
 
-- `robots.txt` and `sitemap.xml` are served dynamically by the backend.
+- `robots.txt`, `sitemap.xml` (index), and grouped sitemaps under `/sitemaps/*.xml` are served dynamically by the backend.
 - Set `PUBLIC_SITE_URL` in production (for example: `https://yourdomain.com`) so sitemap links always use the correct canonical host.
 - After deploy, submit `https://yourdomain.com/sitemap.xml` in Google Search Console.

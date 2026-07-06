@@ -18,6 +18,8 @@ const state = {
   loginRequested: false,
   creditFlowRequested: false,
 };
+let googleSignInInitPromise = null;
+let payPalInitPromise = null;
 
 const form = document.getElementById("video-form");
 const generateButton = document.getElementById("generate-button");
@@ -155,10 +157,46 @@ function tryPlayVideo(video) {
 }
 
 function initAutoplayVideos() {
-  document.querySelectorAll("video[autoplay]").forEach((video) => {
+  const autoplayVideos = Array.from(document.querySelectorAll("video[data-autoplay-visible]"));
+  if (!autoplayVideos.length) {
+    return;
+  }
+
+  autoplayVideos.forEach((video) => {
     video.muted = true;
     video.playsInline = true;
-    tryPlayVideo(video);
+  });
+
+  if (typeof IntersectionObserver !== "function") {
+    autoplayVideos.forEach((video) => {
+      video.preload = "metadata";
+      tryPlayVideo(video);
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          video.preload = "metadata";
+          tryPlayVideo(video);
+          return;
+        }
+        if (!video.paused) {
+          video.pause();
+        }
+      });
+    },
+    {
+      threshold: 0.35,
+      rootMargin: "200px 0px",
+    },
+  );
+
+  autoplayVideos.forEach((video) => {
+    observer.observe(video);
   });
 }
 
@@ -249,6 +287,9 @@ function revealLoginArea({ scroll = true } = {}) {
   clearStandaloneModes();
   document.body.classList.add("account-flow-active");
   updateAuthUi();
+  ensureGoogleSignIn().catch(() => {
+    // Keep login flow usable even when Google sign-in fails to initialize.
+  });
   if (scroll) {
     scrollToElement(accountSection);
   }
@@ -260,6 +301,9 @@ function openPaymentView({ scroll = true } = {}) {
   clearStandaloneModes();
   document.body.classList.add("checkout-flow-active");
   updateAuthUi();
+  ensurePayPalCheckout().catch(() => {
+    // Card checkout remains available even if PayPal cannot initialize.
+  });
   if (scroll) {
     scrollToElement(purchaseCard);
   }
@@ -277,6 +321,9 @@ function openCreditFlow() {
   clearStandaloneModes();
   document.body.classList.add("account-flow-active");
   updateAuthUi();
+  ensureGoogleSignIn().catch(() => {
+    // Email/password flow remains available.
+  });
   scrollToElement(accountSection);
 }
 
@@ -478,6 +525,13 @@ async function initGoogleSignIn() {
   }
 }
 
+function ensureGoogleSignIn() {
+  if (!googleSignInInitPromise) {
+    googleSignInInitPromise = initGoogleSignIn();
+  }
+  return googleSignInInitPromise;
+}
+
 async function initPayPalCheckout() {
   if (!paypalButtons || !paypalStatus) {
     return;
@@ -536,6 +590,13 @@ async function initPayPalCheckout() {
     const message = error instanceof Error ? error.message : "Unable to initialize PayPal checkout.";
     setPayPalStatus(message, true);
   }
+}
+
+function ensurePayPalCheckout() {
+  if (!payPalInitPromise) {
+    payPalInitPromise = initPayPalCheckout();
+  }
+  return payPalInitPromise;
 }
 
 async function restoreSession() {
@@ -787,8 +848,6 @@ form.addEventListener("submit", async (event) => {
 
 restoreSession()
   .then(loadPackages)
-  .then(initGoogleSignIn)
-  .then(initPayPalCheckout)
   .then(initAutoplayVideos)
   .catch((error) => {
     console.error(error);

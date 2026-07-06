@@ -84,6 +84,32 @@ const DEMO_VIDEO_URLS = Object.freeze([
   "https://static.seedancev2.ai/uploads/videos/seedance2-page-02-rain-dance-template.mp4",
   "https://static.seedancev2.ai/uploads/videos/seedance2-hero-1.mp4",
 ]);
+const SITEMAP_GROUPS = Object.freeze({
+  main: Object.freeze([
+    {
+      path: "/",
+      changefreq: "daily",
+      priority: "1.0",
+      alternates: Object.freeze([
+        { hreflang: "en", path: "/" },
+        { hreflang: "zh-Hant", path: "/lawyers.html" },
+        { hreflang: "x-default", path: "/" },
+      ]),
+    },
+  ]),
+  directory: Object.freeze([
+    {
+      path: "/lawyers.html",
+      changefreq: "weekly",
+      priority: "0.6",
+      alternates: Object.freeze([
+        { hreflang: "zh-Hant", path: "/lawyers.html" },
+        { hreflang: "en", path: "/" },
+        { hreflang: "x-default", path: "/" },
+      ]),
+    },
+  ]),
+});
 const storageReady = initializeStorage();
 
 app.use(express.json());
@@ -431,6 +457,14 @@ function toIsoDate(value = new Date()) {
   return value.toISOString().slice(0, 10);
 }
 
+function escapeXml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function getRequestBaseUrl(req) {
   if (PUBLIC_SITE_URL) {
     return PUBLIC_SITE_URL;
@@ -443,29 +477,53 @@ function getRequestBaseUrl(req) {
   return `${protocol}://${host}`.replace(/\/+$/, "");
 }
 
-function buildSitemapXml(baseUrl) {
-  const pages = [
-    {
-      loc: `${baseUrl}/`,
-      changefreq: "daily",
-      priority: "1.0",
-      lastmod: toIsoDate(),
-    },
-  ];
+function toAbsoluteUrl(baseUrl, pathname) {
+  return `${baseUrl}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
+}
 
-  const urlEntries = pages
-    .map(
-      (entry) => `  <url>
-    <loc>${entry.loc}</loc>
-    <lastmod>${entry.lastmod}</lastmod>
-    <changefreq>${entry.changefreq}</changefreq>
-    <priority>${entry.priority}</priority>
-  </url>`,
-    )
+function buildSitemapIndexXml(baseUrl) {
+  const generatedAt = toIsoDate();
+  const entries = Object.keys(SITEMAP_GROUPS)
+    .map((group) => {
+      const loc = escapeXml(toAbsoluteUrl(baseUrl, `/sitemaps/${group}.xml`));
+      return `  <sitemap>
+    <loc>${loc}</loc>
+    <lastmod>${generatedAt}</lastmod>
+  </sitemap>`;
+    })
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries}
+</sitemapindex>`;
+}
+
+function buildSitemapGroupXml(baseUrl, pages) {
+  const generatedAt = toIsoDate();
+  const urlEntries = pages
+    .map((entry) => {
+      const loc = escapeXml(toAbsoluteUrl(baseUrl, entry.path));
+      const alternates = Array.isArray(entry.alternates)
+        ? entry.alternates
+            .map((alternate) => {
+              const href = escapeXml(toAbsoluteUrl(baseUrl, alternate.path));
+              return `    <xhtml:link rel="alternate" hreflang="${escapeXml(alternate.hreflang)}" href="${href}" />`;
+            })
+            .join("\n")
+        : "";
+      return `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${generatedAt}</lastmod>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+${alternates}
+  </url>`;
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urlEntries}
 </urlset>`;
 }
@@ -754,7 +812,21 @@ app.get("/robots.txt", (req, res) => {
 
 app.get("/sitemap.xml", (req, res) => {
   const baseUrl = getRequestBaseUrl(req);
-  const sitemap = buildSitemapXml(baseUrl);
+  const sitemap = buildSitemapIndexXml(baseUrl);
+  res.type("application/xml");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  return res.send(sitemap);
+});
+
+app.get("/sitemaps/:group.xml", (req, res) => {
+  const group = String(req.params.group || "").trim();
+  const pages = SITEMAP_GROUPS[group];
+  if (!pages) {
+    return res.status(404).type("text/plain").send("Sitemap group not found.");
+  }
+
+  const baseUrl = getRequestBaseUrl(req);
+  const sitemap = buildSitemapGroupXml(baseUrl, pages);
   res.type("application/xml");
   res.setHeader("Cache-Control", "public, max-age=3600");
   return res.send(sitemap);
