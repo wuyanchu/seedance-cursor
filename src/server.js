@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", true);
 const port = Number(process.env.PORT) || 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +38,7 @@ const AUTH_TOKEN_SECRET = String(
   process.env.AUTH_TOKEN_SECRET || process.env.PAYPAL_CLIENT_SECRET || process.env.SEEDANCE_API_KEY || "seedance-default-auth-secret",
 ).trim();
 const AUTH_TOKEN_TTL_MS = Number(process.env.AUTH_TOKEN_TTL_MS) || 30 * 24 * 60 * 60 * 1000;
+const PUBLIC_SITE_URL = String(process.env.PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 
 const SUCCESS_STATES = new Set(["succeeded", "success", "completed", "done"]);
 const FAILED_STATES = new Set(["failed", "error", "cancelled", "canceled"]);
@@ -425,6 +427,49 @@ function amountLabel(amountCents) {
   return (amountCents / 100).toFixed(2);
 }
 
+function toIsoDate(value = new Date()) {
+  return value.toISOString().slice(0, 10);
+}
+
+function getRequestBaseUrl(req) {
+  if (PUBLIC_SITE_URL) {
+    return PUBLIC_SITE_URL;
+  }
+
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  const forwardedHost = String(req.headers["x-forwarded-host"] || "").split(",")[0].trim();
+  const host = forwardedHost || String(req.headers.host || "").trim() || "localhost";
+  const protocol = forwardedProto || req.protocol || "https";
+  return `${protocol}://${host}`.replace(/\/+$/, "");
+}
+
+function buildSitemapXml(baseUrl) {
+  const pages = [
+    {
+      loc: `${baseUrl}/`,
+      changefreq: "daily",
+      priority: "1.0",
+      lastmod: toIsoDate(),
+    },
+  ];
+
+  const urlEntries = pages
+    .map(
+      (entry) => `  <url>
+    <loc>${entry.loc}</loc>
+    <lastmod>${entry.lastmod}</lastmod>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+  </url>`,
+    )
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlEntries}
+</urlset>`;
+}
+
 async function verifyGoogleCredential(idToken) {
   const token = String(idToken || "").trim();
   if (!token) {
@@ -697,6 +742,22 @@ app.get("/api/health", (_req, res) => {
     apiConfigured: Boolean(SEEDANCE_API_KEY),
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get("/robots.txt", (req, res) => {
+  const baseUrl = getRequestBaseUrl(req);
+  const robotsText = `User-agent: *\nAllow: /\nSitemap: ${baseUrl}/sitemap.xml\n`;
+  res.type("text/plain");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  return res.send(robotsText);
+});
+
+app.get("/sitemap.xml", (req, res) => {
+  const baseUrl = getRequestBaseUrl(req);
+  const sitemap = buildSitemapXml(baseUrl);
+  res.type("application/xml");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  return res.send(sitemap);
 });
 
 app.get("/api/auth/me", requireAuth, (req, res) => {

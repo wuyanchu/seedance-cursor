@@ -30,6 +30,7 @@ Common defaults are already provided:
 - `SEEDANCE_MODEL=doubao-seedance-2-0-fast-260128`
 - `SEEDANCE_TIMEOUT_MS=300000`
 - `SEEDANCE_POLL_INTERVAL_MS=3000`
+- `PUBLIC_SITE_URL=` (optional but recommended for stable sitemap URL generation)
 
 If your Seedance account uses a different host or model name, update those values.
 
@@ -61,3 +62,9 @@ Open:
 - `GET /api/health` - server status and Seedance config status
 - `POST /api/videos/generate` - create and poll a Seedance generation task
 - `GET /api/videos/download?url=...` - proxy video download as an attachment
+
+## SEO Notes
+
+- `robots.txt` and `sitemap.xml` are served dynamically by the backend.
+- Set `PUBLIC_SITE_URL` in production (for example: `https://yourdomain.com`) so sitemap links always use the correct canonical host.
+- After deploy, submit `https://yourdomain.com/sitemap.xml` in Google Search Console.
