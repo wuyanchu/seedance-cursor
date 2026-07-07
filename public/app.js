@@ -10,6 +10,7 @@ const DURATION_CREDIT_COSTS = Object.freeze({
 const HD_RESOLUTION_CREDIT_SURCHARGE = 300;
 const GENERATE_AUDIO_CREDIT_SURCHARGE = 200;
 const DEFAULT_GUEST_CREDITS = 100;
+const GOOGLE_ADS_CONVERSION_SEND_TO = "AW-1001888846/NWDHCNnR58scEM643t0D";
 
 const state = {
   token: localStorage.getItem(TOKEN_KEY) || "",
@@ -111,6 +112,22 @@ function clearSession() {
 function setStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.style.color = isError ? "#fda4af" : "#cbd5e1";
+}
+
+function trackGoogleAdsConversion(value, currency) {
+  if (typeof window.gtag !== "function") {
+    return;
+  }
+
+  const normalizedValue = Number(value);
+  const safeValue = Number.isFinite(normalizedValue) && normalizedValue > 0 ? Number(normalizedValue.toFixed(2)) : 1.0;
+  const safeCurrency = String(currency || "HKD").trim().toUpperCase() || "HKD";
+
+  window.gtag("event", "conversion", {
+    send_to: GOOGLE_ADS_CONVERSION_SEND_TO,
+    value: safeValue,
+    currency: safeCurrency,
+  });
 }
 
 function setGenerating(isGenerating) {
@@ -574,6 +591,10 @@ async function initPayPalCheckout() {
             body: JSON.stringify({ packageId: selectedPackageId() }),
           });
           updateClient(payload.client);
+          trackGoogleAdsConversion(
+            Number(payload.transaction && payload.transaction.amountCents) / 100,
+            payload.transaction && payload.transaction.currency,
+          );
           setPayPalStatus(`PayPal payment complete. Added ${payload.transaction.credits} credits.`);
           setStatus(`Purchased ${payload.transaction.credits} credits with PayPal.`);
         },
@@ -765,6 +786,10 @@ purchaseForm.addEventListener("submit", async (event) => {
     });
 
     updateClient(payload.client);
+    trackGoogleAdsConversion(
+      Number(payload.transaction && payload.transaction.amountCents) / 100,
+      payload.transaction && payload.transaction.currency,
+    );
     purchaseForm.reset();
     renderPackages(state.packages);
     setStatus(
