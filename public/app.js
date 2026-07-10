@@ -6,10 +6,26 @@ const resultCard = document.getElementById("result-card");
 const resultVideo = document.getElementById("result-video");
 const downloadLink = document.getElementById("download-link");
 const openLink = document.getElementById("open-link");
+const GOOGLE_ADS_CONVERSION_SEND_TO = "AW-1001888846/NWDHCNnR58scEM643t0D";
 
 function setStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.style.color = isError ? "#fda4af" : "#cbd5e1";
+}
+
+function trackGoogleAdsConversion(value, currency) {
+  if (typeof window.gtag !== "function") {
+    return;
+  }
+  const numericValue = Number(value);
+  const safeValue = Number.isFinite(numericValue) && numericValue > 0 ? Number(numericValue.toFixed(2)) : 1.0;
+  const safeCurrency = String(currency || "HKD").trim().toUpperCase() || "HKD";
+
+  window.gtag("event", "conversion", {
+    send_to: GOOGLE_ADS_CONVERSION_SEND_TO,
+    value: safeValue,
+    currency: safeCurrency,
+  });
 }
 
 function resetResult() {
@@ -73,6 +89,9 @@ form.addEventListener("submit", async (event) => {
 
     downloadLink.href = payload.downloadUrl;
     openLink.href = payload.videoUrl;
+    const conversionValue = Number(payload?.value ?? payload?.amount ?? payload?.price ?? duration) || 1.0;
+    const conversionCurrency = payload?.currency || "HKD";
+    trackGoogleAdsConversion(conversionValue, conversionCurrency);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected generation error.";
     setStatus(message, true);
